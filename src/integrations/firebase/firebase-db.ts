@@ -166,3 +166,12 @@ export const uploadProfilePicture = async (file: File, barberEmail: string): Pro
     throw error;
   }
 };
+
+// Fetches extra services from the 'extraservice' collection in Firebase
+export const getExtraServices = async (): Promise<Service[]> => {
+  const querySnapshot = await getDocs(collection(db, 'extraservice'));
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Service[];
+};

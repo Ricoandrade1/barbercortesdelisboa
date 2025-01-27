@@ -6,8 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getServices, getProducts, addProductionResult } from "@/integrations/firebase/firebase-db";
-import { ServiceType, Product } from "@/integrations/firebase/types"; // Import ServiceType and Product
+import { getServices, getProducts, addProductionResult, getExtraServices } from "@/integrations/firebase/firebase-db";
+import { ServiceType, Product } from "@/integrations/firebase/types";
 import { getAuth } from "firebase/auth";
 
 interface ServiceEntryProps {
@@ -39,15 +39,13 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
   }, []);
 
   useEffect(() => {
-    // TODO: Fetch extra services from Firebase if needed, or decide how to handle them
-    // For now, keeping them hardcoded as they might be static or less frequently updated
-    const hardcodedExtraServices: ServiceType[] = [
-      { id: "eyebrows", name: "Tratamento de Sobrancelhas", price: 15 },
-      { id: "design-art", name: "Design Artístico", price: 25 },
-      { id: "hair-treatment", name: "Tratamento Capilar", price: 30 },
-      { id: "color", name: "Coloração", price: 40 },
-    ];
-    setExtraServices(hardcodedExtraServices);
+    const fetchExtraServices = async () => {
+      const extraServicesFromFirebase = await getExtraServices();
+      if (extraServicesFromFirebase) {
+        setExtraServices(extraServicesFromFirebase);
+      }
+    };
+    fetchExtraServices();
   }, []);
 
   useEffect(() => {
