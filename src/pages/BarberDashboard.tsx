@@ -139,7 +139,7 @@ const BarberDashboard = () => {
                       const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
                       return resultDate >= todayStart && resultDate <= todayEnd;
                     })
-                    .reduce((sum, result) => sum + (result.price || 0) + (result.totalPrice || 0), 0)
+                    .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
                     .toFixed(2)}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -153,9 +153,9 @@ const BarberDashboard = () => {
                     })
                     .reduce((sum, result) => {
                       if (result.serviceName === 'Product Sale') {
-                        return sum + ((result.totalPrice || 0) / 1.23) * 0.20;
+                        return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
                       } else {
-                        return sum + (result.commission || (result.price || 0) * 0.4);
+                        return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
                       }
                     }, 0)
                     .toFixed(2)}
@@ -172,7 +172,7 @@ const BarberDashboard = () => {
                       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                       return diffDays <= 7;
                     })
-                    .reduce((sum, result) => sum + (result.price || 0) + (result.totalPrice || 0), 0)
+                    .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
                     .toFixed(2)}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -186,9 +186,9 @@ const BarberDashboard = () => {
                     })
                     .reduce((sum, result) => {
                       if (result.serviceName === 'Product Sale') {
-                         return sum + ((result.totalPrice || 0) / 1.23) * 0.20;
+                         return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
                       } else {
-                        return sum + (result.commission || (result.price || 0) * 0.4);
+                        return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
                       }
                     }, 0)
                     .toFixed(2)}
@@ -207,9 +207,9 @@ const BarberDashboard = () => {
                     })
                     .reduce((sum, result) => {
                       if (result.serviceName === 'Product Sale') {
-                        return sum + ((result.totalPrice || 0) / 1.23) * 0.20;
+                        return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
                       } else {
-                        return sum + (result.commission || (result.price || 0) * 0.4);
+                        return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
                       }
                     }, 0)
                     .toFixed(2)}
@@ -320,13 +320,14 @@ const BarberDashboard = () => {
                         <tr key={result.id} className="border-b">
                           <td className="py-3 px-4">{result.serviceName}</td>
                           <td className="py-3 px-4">{result.clientName}</td>
-                          <td className="text-right py-3 px-4">€{result.price?.toFixed(2) || 0}</td>
-                          <td className="text-right py-3 px-4">€{(result.price * 0.4)?.toFixed(2) || 0}</td>
-                           <td className="text-right py-3 px-4">
+                          <td className="text-right py-3 px-4">€{Number(result.price)?.toFixed(2) || 0}</td>
+                          <td className="text-right py-3 px-4">€{(Number(result.price) * 0.4)?.toFixed(2) || 0}</td>
+                             <td className="text-right py-3 px-4">
                               <Button variant="destructive" size="sm" onClick={async () => {
                                   if (result.id) {
                                     await deleteDoc(doc(db, 'productionResults', result.id));
-                                    await fetchData();
+                                    fetchData();
+                                    window.location.reload()
                                   }
                                 }}>
                                 Excluir
@@ -340,7 +341,7 @@ const BarberDashboard = () => {
                     <tr>
                       <td colSpan={3} className="text-right font-medium py-2 px-4">Total</td>
                       <td className="text-right font-medium py-2 px-4">
-                        €{productionResults.slice(0, 5).reduce((sum, result) => {
+                        €{productionResults.reduce((sum, result) => {
                           if (result.serviceName === 'Product Sale') {
                             return sum + ((result.totalPrice || 0) / 1.23) * 0.20;
                           } else {

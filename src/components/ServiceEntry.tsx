@@ -27,6 +27,11 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
   const [extraService, setExtraService] = useState("")
   const [selectedProduct, setSelectedProduct] = useState("")
   const [quantity, setQuantity] = useState("1")
+  const [key, setKey] = useState(0);
+
+  useEffect(() => {
+    setKey(prevKey => prevKey + 1);
+  }, [fetchData]);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -75,19 +80,32 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
     return { vatAmount, totalPrice, commission };
   };
 
-  const handleServiceSubmit = async (e: React.FormEvent) => {
+    const handleServiceSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!selectedService || !clientName) {
+    if (!selectedService) {
       toast({
         variant: "destructive",
         title: "Erro",
-        description: "Por favor preencha todos os campos obrigatórios.",
+        description: "Por favor selecione um serviço.",
       })
       return
     }
+    
+    let clientNameToUse = clientName;
+    if (!clientName) {
+      clientNameToUse = "Sem Nome";
+    }
 
     const selectedServiceData = services.find(s => s.id === selectedService);
+    if (!selectedServiceData) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Serviço não encontrado.",
+      })
+      return
+    }
     const auth = getAuth();
     const user = auth.currentUser;
 
@@ -119,22 +137,27 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         description: `${selectedServiceData?.name} para ${clientName}`,
       })
 
-      setSelectedService("")
-      setClientName("")
-      setExtraService("")
+      setSelectedService(prev => null)
+      setClientName(prev => null)
+      setExtraService(prev => null)
 
       if (onServiceComplete) {
         onServiceComplete(serviceDetails)
       }
-      fetchData();
+      toast({
+        title: "Serviço registrado com sucesso!",
+        description: `${selectedServiceData?.name} para ${clientName}`,
+      });
+      window.location.reload();
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Erro ao registrar serviço",
         description: "Por favor tente novamente.",
-      })
+      });
     }
   }
+  
 
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -150,11 +173,15 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       const product = products.find(p => p.id === selectedProduct)
       if (!product) {
         console.log("Product not found:", selectedProduct, products); // ADDED CONSOLE LOG
-        return
+        return toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Produto não encontrado.",
+        });
       }
       console.log("Selected product:", product); // ADDED CONSOLE LOG
 
-      const { vatAmount, totalPrice, commission } = calculateProductPrices(product.basePrice)
+      const { vatAmount, totalPrice, commission } = calculateProductPrices(product?.basePrice || 0)
       const auth = getAuth();
       const user = auth.currentUser;
 
@@ -190,8 +217,8 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         className: "bg-green-500 text-white",
       })
 
-      setSelectedProduct("")
-      setQuantity("1")
+      setSelectedProduct(prev => "")
+      setQuantity(prev => "1")
       fetchData();
     } catch (error) {
       console.error("Error in handleProductSubmit:", error);
@@ -204,7 +231,13 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
   }
 
   return (
-    <Tabs defaultValue="services" className="w-full">
+    <Tabs defaultValue="services" className="w-full" onValueChange={(value) => {
+      setSelectedService("");
+      setClientName("");
+      setExtraService("");
+      setSelectedProduct("");
+      setQuantity("1");
+    }}>
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="services">Serviços</TabsTrigger>
         <TabsTrigger value="products">Produtos</TabsTrigger>
@@ -215,7 +248,7 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
           <form onSubmit={handleServiceSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="service-type">Tipo de Serviço</Label>
-              <Select value={selectedService} onValueChange={setSelectedService}>
+              <Select key={selectedService} value={selectedService} onValueChange={setSelectedService}>
                 <SelectTrigger id="service-type">
                   <SelectValue placeholder="Selecione o serviço" />
                 </SelectTrigger>
@@ -241,7 +274,7 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
 
             <div className="space-y-2">
               <Label htmlFor="extra-service">Serviço Extra</Label>
-              <Select value={extraService} onValueChange={setExtraService}>
+              <Select key={extraService} value={extraService} onValueChange={setExtraService}>
                 <SelectTrigger id="extra-service">
                   <SelectValue placeholder="Selecione o serviço extra (opcional)" />
                 </SelectTrigger>
@@ -267,7 +300,7 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
           <form onSubmit={handleProductSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="product-type">Produto</Label>
-              <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+              <Select key={selectedProduct} value={selectedProduct} onValueChange={setSelectedProduct}>
                 <SelectTrigger id="product-type">
                   <SelectValue placeholder="Selecione o produto" />
                 </SelectTrigger>
@@ -303,15 +336,15 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
                   const product = products.find(p => p.id === selectedProduct)
                   if (!product) return null
                   
-                  const { vatAmount, totalPrice, commission } = calculateProductPrices(product.basePrice)
+                  const { vatAmount, totalPrice, commission } = calculateProductPrices(product?.basePrice || 0)
                   return (
                     <div className="space-y-1 text-sm">
-                      <p>Preço base: €{product.basePrice.toFixed(2)}</p>
-                      <p>Preço base sem IVA: €{(product.basePrice / (1 + VAT_RATE)).toFixed(2)}</p>
+                      <p>Preço base: €{product?.basePrice?.toFixed(2)}</p>
+                      <p>Preço base sem IVA: €{(product?.basePrice / (1 + VAT_RATE))?.toFixed(2)}</p>
                       <p>IVA (23%): €{vatAmount.toFixed(2)}</p>
   
                       <p>Comissão (20%): €{commission.toFixed(2)}</p>
-                      <p>Stock disponível: {product.stock}</p>
+                      <p>Stock disponível: {product?.stock}</p>
                     </div>
                   )
                 })()}
