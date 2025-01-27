@@ -102,7 +102,7 @@ const BarberDashboard = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-primary">Dashboard do Barbeiro</h1>
             <p className="text-muted-foreground">Bem-vindo de volta, {barberData.name || 'Barbeiro'}</p>
@@ -115,7 +115,7 @@ const BarberDashboard = () => {
             </Button>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-6">
             <ServiceEntry
               onServiceComplete={(service) => {
@@ -127,7 +127,7 @@ const BarberDashboard = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="p-6">
                 <h3 className="text-lg font-medium">Ganhos Hoje</h3>
                 <p className="text-3xl font-bold mt-2">
