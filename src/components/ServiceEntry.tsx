@@ -243,6 +243,14 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       setExtraService("");
       setSelectedProduct("");
       setQuantity("1");
+    }} onValueChange={(value) => {
+      if (value !== "products") {
+        setSelectedService("");
+        setClientName("");
+        setExtraService("");
+      }
+      setSelectedProduct("");
+      setQuantity("1");
     }}>
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="services">Serviços</TabsTrigger>
