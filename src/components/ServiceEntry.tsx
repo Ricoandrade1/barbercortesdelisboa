@@ -119,16 +119,18 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
     }
 
     let extraServicePrice = 0;
+    let extraServiceName = "";
     if (extraService) {
       const selectedExtraServiceData = extraServices.find(s => s.id === extraService);
       extraServicePrice = selectedExtraServiceData?.price || 0;
+      extraServiceName = selectedExtraServiceData?.name || "";
     }
 
     const serviceDetails = {
       barberName: user.email,
       serviceName: selectedServiceData?.name || 'Unknown Service',
       clientName,
-      extraService,
+      extraService: extraServiceName,
       date: new Date().toISOString(),
       price: (selectedServiceData?.price || 0) + extraServicePrice,
       commission: ((selectedServiceData?.price || 0) + extraServicePrice) * 0.4,
@@ -145,7 +147,7 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
 
       setSelectedService(prev => null)
       setClientName(prev => null)
-      setExtraService(prev => null)
+      setExtraService(prev => "")
 
       if (onServiceComplete) {
         onServiceComplete(serviceDetails)
@@ -155,7 +157,7 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         description: `${selectedServiceData?.name} para ${clientName}`,
       });
       window.location.reload();
-    } catch (error) {
+    }  catch (error) {
       toast({
         variant: "destructive",
         title: "Erro ao registrar serviço",
