@@ -24,10 +24,14 @@ export const addProduct = async (product: Omit<Product, 'id'>) => {
 
 export const getProducts = async (): Promise<Product[]> => {
   const querySnapshot = await getDocs(collection(db, 'products'));
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  })) as Product[];
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      basePrice: data.basePrice || 0,
+      ...data
+    }
+  }) as Product[];
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
