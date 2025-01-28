@@ -83,11 +83,11 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
     const handleServiceSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!selectedService) {
+    if (!selectedService && !extraService) {
       toast({
         variant: "destructive",
         title: "Erro",
-        description: "Por favor selecione um serviço.",
+        description: "Por favor selecione um serviço ou serviço extra.",
       })
       return
     }
@@ -97,17 +97,30 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       clientNameToUse = "Sem Nome";
     }
 
-    const selectedServiceData = services.find(s => s.id === selectedService);
-    if (!selectedServiceData) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: "Serviço não encontrado.",
-      })
-      return
-    }
     const auth = getAuth();
     const user = auth.currentUser;
+    
+    let selectedServiceData;
+    let extraServicePrice = 0;
+    let extraServiceName = "";
+
+    if (selectedService) {
+      selectedServiceData = services.find(s => s.id === selectedService);
+      if (!selectedServiceData) {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Serviço não encontrado.",
+        })
+        return
+      }
+    }
+
+    if (extraService) {
+      const selectedExtraServiceData = extraServices.find(s => s.id === extraService);
+      extraServicePrice = selectedExtraServiceData?.price || 0;
+      extraServiceName = selectedExtraServiceData?.name || "";
+    }
 
     if (!user || !user.email) {
       toast({
@@ -117,24 +130,38 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       });
       return;
     }
-
-    let extraServicePrice = 0;
-    let extraServiceName = "";
-    if (extraService) {
+    
+    let serviceDetails;
+    if (selectedService) {
+      let extraServicePrice = 0;
+      let extraServiceName = "";
+      if (extraService) {
+        const selectedExtraServiceData = extraServices.find(s => s.id === extraService);
+        extraServicePrice = selectedExtraServiceData?.price || 0;
+        extraServiceName = selectedExtraServiceData?.name || "";
+      }
+      const selectedServiceData = services.find(s => s.id === selectedService);
+      serviceDetails = {
+        barberName: user.email,
+        serviceName: selectedServiceData?.name || 'Unknown Service',
+        clientName,
+        extraService: extraServiceName,
+        date: new Date().toISOString(),
+        price: (selectedServiceData?.price || 0) + extraServicePrice,
+        commission: ((selectedServiceData?.price || 0) + extraServicePrice) * 0.4,
+      };
+    } else {
       const selectedExtraServiceData = extraServices.find(s => s.id === extraService);
-      extraServicePrice = selectedExtraServiceData?.price || 0;
-      extraServiceName = selectedExtraServiceData?.name || "";
+      serviceDetails = {
+        barberName: user.email,
+        serviceName: selectedExtraServiceData?.name || 'Unknown Service',
+        clientName,
+        extraService: selectedExtraServiceData?.name || "",
+        date: new Date().toISOString(),
+        price: selectedExtraServiceData?.price || 0,
+        commission: (selectedExtraServiceData?.price || 0) * 0.4,
+      };
     }
-
-    const serviceDetails = {
-      barberName: user.email,
-      serviceName: selectedServiceData?.name || 'Unknown Service',
-      clientName,
-      extraService: extraServiceName,
-      date: new Date().toISOString(),
-      price: (selectedServiceData?.price || 0) + extraServicePrice,
-      commission: ((selectedServiceData?.price || 0) + extraServicePrice) * 0.4,
-    };
 
     try {
       await addProductionResult(serviceDetails);

@@ -295,7 +295,7 @@ const BarberDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {productionResults.slice(0, 5).map((result) => {
+                    {productionResults.map((result) => {
                       if (result.serviceName === 'Product Sale') {
                         return (
                           <tr key={result.id} className="border-b">
