@@ -34,11 +34,26 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LoginPage />} /> {/* Make LoginPage the root route */}
-            <Route path="/login" element={<LoginPage />} /> {/* Keep /login route for clarity */}
-            <Route path="/barber" element={<BarberDashboard />} />
-            <Route path="/manager" element={<ManagerDashboard />} />
-            <Route path="/access-control" element={<AccessControlPage />} /> {/* Add AccessControlPage route */}
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/barber"
+              element={
+                isAuthenticated ? <BarberDashboard /> : <Navigate to="/login" />
+              }
+            />
+            <Route
+              path="/manager"
+              element={
+                isAuthenticated ? <ManagerDashboard /> : <Navigate to="/login" />
+              }
+            />
+             <Route
+              path="/access-control"
+              element={
+                isAuthenticated ? <AccessControlPage /> : <Navigate to="/login" />
+              }
+            />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
