@@ -26,9 +26,17 @@
             console.log('Service Worker registrado com sucesso:', registration);
           })
           .catch((error) => {
-            console.log('Falha ao registrar Service Worker:', error);
+            console.error('Falha ao registrar Service Worker:', error);
           });
+      } else {
+        console.log('Service workers are not supported.');
       }
+    
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (let registration of registrations) {
+        registration.unregister();
+      }
+    });
     </script>
   </body>
 </html>

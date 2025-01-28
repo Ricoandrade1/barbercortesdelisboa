@@ -9,3 +9,5 @@ workbox.routing.registerRoute(
   ({request}) => request.destination === 'style' || request.destination === 'script',
   new workbox.strategies.StaleWhileRevalidate()
 );
+
+console.log('Service worker activated');
