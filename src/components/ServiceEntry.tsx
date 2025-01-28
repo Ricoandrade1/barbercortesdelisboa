@@ -185,9 +185,17 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
           description: "Produto não encontrado.",
         });
       }
-      console.log("Selected product:", product); // ADDED CONSOLE LOG
+      if (product.basePrice === undefined) {
+        console.log("Product missing basePrice:", product);
+        return toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Produto sem preço base.",
+        });
+      }
+      console.log("Selected product:", product);
 
-      const { vatAmount, totalPrice, commission } = calculateProductPrices(product?.basePrice || 0)
+      const { vatAmount, totalPrice, commission } = calculateProductPrices(product.basePrice)
       const auth = getAuth();
       const user = auth.currentUser;
 
