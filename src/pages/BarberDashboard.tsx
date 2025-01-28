@@ -295,7 +295,11 @@ const BarberDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {productionResults.map((result) => {
+                    {productionResults.sort((a, b) => {
+                      const dateA = new Date(a.date);
+                      const dateB = new Date(b.date);
+                      return dateB.getTime() - dateA.getTime();
+                    }).map((result) => {
                       if (result.serviceName === 'Product Sale') {
                         return (
                           <tr key={result.id} className="border-b">
