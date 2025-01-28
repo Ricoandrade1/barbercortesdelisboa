@@ -118,14 +118,20 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       return;
     }
 
+    let extraServicePrice = 0;
+    if (extraService) {
+      const selectedExtraServiceData = extraServices.find(s => s.id === extraService);
+      extraServicePrice = selectedExtraServiceData?.price || 0;
+    }
+
     const serviceDetails = {
       barberName: user.email,
       serviceName: selectedServiceData?.name || 'Unknown Service',
       clientName,
       extraService,
       date: new Date().toISOString(),
-      price: selectedServiceData?.price || 0,
-      commission: (selectedServiceData?.price || 0) * 0.4,
+      price: (selectedServiceData?.price || 0) + extraServicePrice,
+      commission: ((selectedServiceData?.price || 0) + extraServicePrice) * 0.4,
     };
 
     try {
