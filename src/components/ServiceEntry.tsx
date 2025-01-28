@@ -351,7 +351,7 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
           <form onSubmit={handleProductSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="product-type">Produto</Label>
-              <Select key={selectedProduct} value={selectedProduct} onValueChange={setSelectedProduct}>
+              <Select key={`${selectedProduct}-${key}`} value={selectedProduct} onValueChange={setSelectedProduct}>
                 <SelectTrigger id="product-type">
                   <SelectValue placeholder="Selecione o produto" />
                 </SelectTrigger>

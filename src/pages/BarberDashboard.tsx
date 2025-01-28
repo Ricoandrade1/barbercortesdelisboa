@@ -198,13 +198,6 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium">Total a Receber</h3>
                  <p className="text-3xl font-bold mt-2">
                   €{productionResults
-                    .filter(result => {
-                      const resultDate = new Date(result.date);
-                      const today = new Date();
-                      const diffTime = Math.abs(today.getTime() - resultDate.getTime());
-                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                      return diffDays <= 7;
-                    })
                     .reduce((sum, result) => {
                       if (result.serviceName === 'Product Sale') {
                         return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
