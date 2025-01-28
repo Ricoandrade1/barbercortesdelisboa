@@ -11,11 +11,24 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="apple-touch-icon" href="/og-image.png" />
     <meta name="apple-mobile-web-app-title" content="Carteira" />
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
   </head>
 
   <body>
     <div id="root"></div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('Service Worker registrado com sucesso:', registration);
+          })
+          .catch((error) => {
+            console.log('Falha ao registrar Service Worker:', error);
+          });
+      }
+    </script>
   </body>
 </html>
