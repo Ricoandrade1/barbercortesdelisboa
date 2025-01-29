@@ -8,8 +8,18 @@ import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/integrations/firebase/firebase-config";
 import { addBarber } from "@/integrations/firebase/firebase-db";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const LoginPage = () => {
+  const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
@@ -97,30 +107,30 @@ const LoginPage = () => {
           <CardTitle>{isLogin ? "Iniciar Sessão" : "Registar Conta"}</CardTitle>
           <CardDescription>Entre com as suas credenciais para aceder à plataforma</CardDescription>
           <div className="flex space-x-2 mt-2">
-            {navigator.userAgent.match(/iPhone|iPad|iPod/i) ? (
-              <Button asChild size="sm" variant="ghost">
-                <a href="https://barbeirocortedelisboa.netlify.app/">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                  <span className="text-xs">Instalar App</span>
-                </a>
-              </Button>
-            ) : navigator.userAgent.match(/Android/i) ? (
-              <Button asChild size="sm" variant="ghost">
-                <a href="https://barbeirocortedelisboa.netlify.app/">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                  <span className="text-xs">Instalar App</span>
-                </a>
-              </Button>
-            ) : (
-              <Button onClick={() => {
-                if (window.deferredPrompt) {
-                  window.deferredPrompt.prompt();
-                }
-              }} size="sm" variant="ghost">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                <span className="text-xs">Instalar App</span>
-              </Button>
-            )}
+            <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              <span className="text-xs">Instalar App</span>
+            </Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Instalar App</DialogTitle>
+                  <DialogDescription>
+                    Clique em "Baixar" para instalar o app PWA.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button onClick={() => {
+                    if (window.deferredPrompt) {
+                      window.deferredPrompt.prompt();
+                    }
+                    setOpen(false);
+                  }}>
+                    Baixar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent className="grid gap-4 overflow-y-auto max-h-[400px]">
