@@ -53,8 +53,6 @@ const LoginPage = () => {
   };
 
   const handlePasswordReset = async (email: string) => {
-    const auth = getAuth();
-    
     try {
       await sendPasswordResetEmail(auth, email);
       toast({
@@ -90,16 +88,21 @@ const LoginPage = () => {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100 overflow-y-auto overflow-x-hidden">
-      <div className="fixed top-0 left-0 w-full p-4 flex justify-center z-50">
-        <Button onClick={() => {
-          if (window.deferredPrompt) {
-            window.deferredPrompt.prompt();
-          }
-        }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-          Install App
-        </Button>
-      </div>
+      {window.deferredPrompt && (
+        <div className="fixed top-0 left-0 w-full p-4 flex justify-center z-50">
+          <Button onClick={() => {
+              if (window.deferredPrompt) {
+                console.log('deferredPrompt is available');
+                window.deferredPrompt.prompt();
+              } else {
+                console.log('deferredPrompt is not available');
+              }
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            Install App
+          </Button>
+        </div>
+      )}
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2 pb-4">
           <CardTitle>{isLogin ? "Iniciar Sessão" : "Registar Conta"}</CardTitle>
@@ -148,16 +151,6 @@ const LoginPage = () => {
                       className="border rounded px-2 py-1"
                     >
                       <option value="">Selecione uma unidade</option>
-                      <option value="Alcântara">Alcântara</option>
-                      <option value="Alegro Alfragide">Alegro Alfragide</option>
-                      <option value="CascaiShopping">CascaiShopping</option>
-                      <option value="Colombo">Colombo</option>
-                      <option value="LoureShopping">LoureShopping</option>
-                      <option value="Alegro Sintra">Alegro Sintra</option>
-                      <option value="Braga Parque">Braga Parque</option>
-                      <option value="Évora Plaza">Évora Plaza</option>
-                      <option value="Forum Coimbra">Forum Coimbra</option>
-                      <option value="LeiriaShopping">LeiriaShopping</option>
                       <option value="Alcântara">Alcântara</option>
                       <option value="Alegro Alfragide">Alegro Alfragide</option>
                       <option value="CascaiShopping">CascaiShopping</option>
