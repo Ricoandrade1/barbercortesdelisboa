@@ -20,12 +20,10 @@
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      let deferredPrompt;
-
       window.addEventListener('beforeinstallprompt', (e) => {
         console.log('beforeinstallprompt fired');
         e.preventDefault();
-        deferredPrompt = e;
+        let deferredPrompt = e;
         window.deferredPrompt = e;
       });
 
@@ -60,6 +58,30 @@
         registration.unregister();
       }
     });
+    </script>
+    <button id="install-btn" style="display: none;">Baixar App</button>
+    <script>
+        let deferredPrompt;
+
+        // Detecta o evento beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e; // Guarda o evento
+            document.getElementById('install-btn').style.display = 'block'; // Exibe o botão
+        });
+
+        // Lógica do botão de instalação
+        document.getElementById('install-btn').addEventListener('click', () => {
+            deferredPrompt.prompt(); // Mostra o banner de instalação
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Usuário aceitou a instalação');
+                } else {
+                    console.log('Usuário recusou a instalação');
+                }
+                deferredPrompt = null;
+            });
+        });
     </script>
   </body>
 </html>

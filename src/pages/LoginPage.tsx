@@ -59,12 +59,14 @@ const LoginPage = () => {
         title: "Email enviado!",
         description: "Verifique sua caixa de entrada para redefinir sua senha.",
       });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao enviar email",
-        description: error.message,
-      });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao enviar email",
+          description: error.message,
+        });
+      }
     }
   };
 
@@ -76,36 +78,50 @@ const LoginPage = () => {
         description: "Sessão terminada.",
       });
       navigate("/"); // Redirect to home or login page after logout
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao fazer logout",
-        description: error.message,
-      });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao fazer logout",
+          description: error.message,
+        });
+      }
     }
   };
 
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100 overflow-y-auto overflow-x-hidden">
-      <div className="fixed top-0 left-0 w-full p-4 flex justify-center z-50 md:static">
-        <Button onClick={() => {
-            if (window.deferredPrompt) {
-              console.log('deferredPrompt is available');
-              window.deferredPrompt.prompt();
-            } else {
-              console.log('deferredPrompt is not available');
-            }
-            window.showInstallPrompt();
-        }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-          Install App
-        </Button>
-      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2 pb-4">
           <CardTitle>{isLogin ? "Iniciar Sessão" : "Registar Conta"}</CardTitle>
           <CardDescription>Entre com as suas credenciais para aceder à plataforma</CardDescription>
+          <div className="flex space-x-2 mt-2">
+            {navigator.userAgent.match(/iPhone|iPad|iPod/i) ? (
+              <Button asChild size="sm" variant="ghost">
+                <a href="https://barbeirocortedelisboa.netlify.app/">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  <span className="text-xs">Instalar App</span>
+                </a>
+              </Button>
+            ) : navigator.userAgent.match(/Android/i) ? (
+              <Button asChild size="sm" variant="ghost">
+                <a href="https://barbeirocortedelisboa.netlify.app/">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  <span className="text-xs">Instalar App</span>
+                </a>
+              </Button>
+            ) : (
+              <Button onClick={() => {
+                if (window.deferredPrompt) {
+                  window.deferredPrompt.prompt();
+                }
+              }} size="sm" variant="ghost">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <span className="text-xs">Instalar App</span>
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="grid gap-4 overflow-y-auto max-h-[400px]">
           <form onSubmit={handleSubmit}>
