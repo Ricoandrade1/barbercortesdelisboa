@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import DownloadIphoneButton from "@/components/DownloadIphoneButton";
+import { DownloadIphoneButton } from "@/components/DownloadIphoneButton";
 
 const LoginPage = () => {
   const [open, setOpen] = useState(false);
@@ -109,13 +109,9 @@ const LoginPage = () => {
           <CardDescription>Entre com as suas credenciais para aceder à plataforma</CardDescription>
           <div className="flex space-x-2 mt-2">
             {navigator.userAgent.match(/iPhone|iPad|iPod/i) ? (
-              <DownloadIphoneButton url="https://barbeirocortedelisboa.netlify.app/" />
+              <DownloadIphoneButton />
             ) : (
-              <Button size="sm" variant="ghost" onClick={() => {
-                if (window.deferredPrompt) {
-                  window.deferredPrompt.prompt();
-                }
-              }}>
+              <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                 <span className="text-xs">Instalar App</span>
               </Button>
