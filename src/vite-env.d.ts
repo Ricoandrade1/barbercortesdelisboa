@@ -2,4 +2,5 @@
 
 interface Window {
   deferredPrompt: any;
+  showInstallPrompt: () => void;
 }

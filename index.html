@@ -29,6 +29,20 @@
         window.deferredPrompt = e;
       });
 
+      const showInstallPrompt = () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('Usuário aceitou a instalação.');
+            } else {
+              console.log('Usuário recusou a instalação.');
+            }
+            deferredPrompt = null; // Reseta o evento após uso
+          });
+        }
+      };
+
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
           .then((registration) => {
