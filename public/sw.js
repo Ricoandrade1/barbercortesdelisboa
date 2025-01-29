@@ -11,3 +11,4 @@ workbox.routing.registerRoute(
 );
 
 console.log('Service worker activated');
+console.log('Service worker is running');
