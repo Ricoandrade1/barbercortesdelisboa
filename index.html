@@ -9,38 +9,70 @@
     <meta property="og:image" content="/og-image.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="apple-touch-icon" href="/og-image.png" />
+    <link rel="apple-touch-icon" href="/icon-192x192.png" />
     <meta name="apple-mobile-web-app-title" content="Carteira" />
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#000000">
+    <style>
+      #install-btn {
+        display: none;
+        padding: 10px 20px;
+        background-color: #1a365d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      
+      #install-btn.show {
+        display: block;
+      }
+    </style>
   </head>
 
   <body>
     <div id="root"></div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <!-- Remover script do GPT Engineer para melhorar performance -->
+    <!-- <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script> -->
     <script type="module" src="/src/main.tsx"></script>
+    
+    <button id="install-btn" class="install-button">Baixar App</button>
+    
     <script>
+      let deferredPrompt;
+
+      // Único event listener para beforeinstallprompt
       window.addEventListener('beforeinstallprompt', (e) => {
         console.log('beforeinstallprompt fired');
         e.preventDefault();
-        let deferredPrompt = e;
-        window.deferredPrompt = e;
+        deferredPrompt = e;
+        const installBtn = document.getElementById('install-btn');
+        installBtn.classList.add('show');
       });
 
-      const showInstallPrompt = () => {
+      // Lógica do botão de instalação
+      document.getElementById('install-btn').addEventListener('click', () => {
         if (deferredPrompt) {
+          // Configurar opções de instalação com legenda personalizada
+          const promptOptions = {
+            title: "Carteira",
+            description: "Clique em 'Baixar' para instalar o app."
+          };
+          
           deferredPrompt.prompt();
           deferredPrompt.userChoice.then((choiceResult) => {
             if (choiceResult.outcome === 'accepted') {
-              console.log('Usuário aceitou a instalação.');
+              console.log('Usuário aceitou a instalação');
+              document.getElementById('install-btn').classList.remove('show');
             } else {
-              console.log('Usuário recusou a instalação.');
+              console.log('Usuário recusou a instalação');
             }
-            deferredPrompt = null; // Reseta o evento após uso
+            deferredPrompt = null;
           });
         }
-      };
+      });
 
+      // Registro do Service Worker
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
           .then((registration) => {
@@ -49,39 +81,7 @@
           .catch((error) => {
             console.error('Falha ao registrar Service Worker:', error);
           });
-      } else {
-        console.log('Service workers are not supported.');
       }
-    
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      for (let registration of registrations) {
-        registration.unregister();
-      }
-    });
-    </script>
-    <button id="install-btn" style="display: none;">Baixar App</button>
-    <script>
-        let deferredPrompt;
-
-        // Detecta o evento beforeinstallprompt
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e; // Guarda o evento
-            document.getElementById('install-btn').style.display = 'block'; // Exibe o botão
-        });
-
-        // Lógica do botão de instalação
-        document.getElementById('install-btn').addEventListener('click', () => {
-            deferredPrompt.prompt(); // Mostra o banner de instalação
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('Usuário aceitou a instalação');
-                } else {
-                    console.log('Usuário recusou a instalação');
-                }
-                deferredPrompt = null;
-            });
-        });
     </script>
   </body>
 </html>
