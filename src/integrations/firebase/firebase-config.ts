@@ -13,12 +13,20 @@ export const firebaseConfig = {
   measurementId: "G-FE5R84694M"
 };
 
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);
+
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log('Persistência configurada para LOCAL.');
+  })
+  .catch((error) => {
+    console.error('Erro ao configurar persistência:', error);
+  });
 // Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);

@@ -8,7 +8,7 @@ import BarberDashboard from "./pages/BarberDashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import LoginPage from "./pages/LoginPage";
 import AccessControlPage from "./pages/AccessControlPage"; // Import AccessControlPage
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import { useState, useEffect } from 'react';
 
 const queryClient = new QueryClient();
@@ -18,13 +18,47 @@ const App = () => {
   const auth = getAuth();
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    const checkUserAuth = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          console.log("User auth state changed:", user);
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error("Error checking auth state:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkUserAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       console.log("User auth state changed:", user);
       setIsAuthenticated(!!user);
     }, (error) => {
       console.error("Error in onAuthStateChanged:", error);
     });
+
+    return () => unsubscribe();
   }, [auth]);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log('Internet voltou! Sincronizando...');
+      // Adicione aqui a lógica para sincronizar os dados com o Firebase
+      // Por exemplo, você pode verificar se há dados locais que precisam ser enviados
+      // para o Firebase e fazer a sincronização.
+    };
+
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
 
   if (isAuthenticated === null) {
     return <div>Checking Authentication...</div>;
