@@ -189,8 +189,8 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         title: "Serviço registrado com sucesso!",
         description: `${selectedServiceData?.name} para ${clientName}`,
       });
-      window.location.reload();
-    }  catch (error) {
+      fetchData();
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Erro ao registrar serviço",
