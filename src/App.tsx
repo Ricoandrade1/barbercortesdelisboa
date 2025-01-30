@@ -35,11 +35,11 @@ const App = () => {
 
     checkUserAuth();
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("User auth state changed:", user);
-      setIsAuthenticated(!!user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        console.log("User auth state changed:", user);
+        setIsAuthenticated(!!user);
     }, (error) => {
-      console.error("Error in onAuthStateChanged:", error);
+        console.error("Error in onAuthStateChanged:", error);
     });
 
     return () => unsubscribe();
