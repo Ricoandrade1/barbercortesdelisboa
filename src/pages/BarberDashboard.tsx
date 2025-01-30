@@ -43,6 +43,9 @@ const BarberDashboard = () => {
   const [dateRange, setDateRange] = useState<any>(undefined);
   const [open, setOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [ganhosHojeVisible, setGanhosHojeVisible] = useState(false);
+  const [ganhosSemanaVisible, setGanhosSemanaVisible] = useState(false);
+  const [totalReceberVisible, setTotalReceberVisible] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
@@ -122,7 +125,7 @@ const BarberDashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
           <div className="space-y-6">
             <ServiceEntry
               onServiceComplete={(service) => {
@@ -134,11 +137,16 @@ const BarberDashboard = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-6">
               <Card className="p-6">
-                <h3 className="text-lg font-medium">Ganhos Hoje</h3>
+                <h3 className="text-lg font-medium flex items-center justify-between">
+                  Ganhos Hoje
+                  <Button variant="ghost" size="icon" onClick={() => setGanhosHojeVisible(!ganhosHojeVisible)}>
+                    {ganhosHojeVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                  </Button>
+                </h3>
                 <p className="text-3xl font-bold mt-2">
-                  €{productionResults
+                  {ganhosHojeVisible ? `€${productionResults
                     .filter(result => {
                       const resultDate = new Date(result.date);
                       const today = new Date();
@@ -147,10 +155,10 @@ const BarberDashboard = () => {
                       return resultDate >= todayStart && resultDate <= todayEnd;
                     })
                     .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
-                    .toFixed(2)}
+                    .toFixed(2)}` : '******'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Comissão: €{productionResults
+                  Comissão: {ganhosHojeVisible ? `€${productionResults
                     .filter(result => {
                       const resultDate = new Date(result.date);
                       const today = new Date();
@@ -165,13 +173,18 @@ const BarberDashboard = () => {
                         return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
                       }
                     }, 0)
-                    .toFixed(2)}
+                    .toFixed(2)}` : '******'}
                 </p>
               </Card>
               <Card className="p-6">
-                <h3 className="text-lg font-medium">Ganhos esta Semana</h3>
+                <h3 className="text-lg font-medium flex items-center justify-between">
+                  Ganhos esta Semana
+                  <Button variant="ghost" size="icon" onClick={() => setGanhosSemanaVisible(!ganhosSemanaVisible)}>
+                    {ganhosSemanaVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                  </Button>
+                </h3>
                  <p className="text-3xl font-bold mt-2">
-                  €{productionResults
+                  {ganhosSemanaVisible ? `€${productionResults
                     .filter(result => {
                       const resultDate = new Date(result.date);
                       const today = new Date();
@@ -180,10 +193,10 @@ const BarberDashboard = () => {
                       return diffDays <= 7;
                     })
                     .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
-                    .toFixed(2)}
+                    .toFixed(2)}` : '******'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Comissão: €{productionResults
+                  Comissão: {ganhosSemanaVisible ? `€${productionResults
                     .filter(result => {
                       const resultDate = new Date(result.date);
                       const today = new Date();
@@ -198,13 +211,18 @@ const BarberDashboard = () => {
                         return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
                       }
                     }, 0)
-                    .toFixed(2)}
+                    .toFixed(2)}` : '******'}
                 </p>
               </Card>
               <Card className="p-6">
-                <h3 className="text-lg font-medium">Total a Receber</h3>
+                <h3 className="text-lg font-medium flex items-center justify-between">
+                  Total a Receber
+                  <Button variant="ghost" size="icon" onClick={() => setTotalReceberVisible(!totalReceberVisible)}>
+                    {totalReceberVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                  </Button>
+                </h3>
                  <p className="text-3xl font-bold mt-2">
-                  €{productionResults
+                  {totalReceberVisible ? `€${productionResults
                     .reduce((sum, result) => {
                       if (result.serviceName === 'Product Sale') {
                         return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
@@ -212,7 +230,7 @@ const BarberDashboard = () => {
                         return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
                       }
                     }, 0)
-                    .toFixed(2)}
+                    .toFixed(2)}` : '******'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">Comissões pendentes</p>
               </Card>
