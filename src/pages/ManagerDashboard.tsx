@@ -210,7 +210,7 @@ const ManagerDashboard = () => {
       toast({
         variant: "destructive",
         title: "Erro ao excluir serviço",
-        description: "Houve um erro ao excluir o serviço.",
+        description: error.message,
       });
     }
   };
