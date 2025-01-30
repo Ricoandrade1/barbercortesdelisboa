@@ -249,7 +249,7 @@ const ManagerDashboard = () => {
             <AddServiceModal fetchData={fetchData} /> {/* Add AddServiceModal button */}
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => {
-                navigate('/login');
+                navigate('/index', { replace: true });
               }}>
                 Voltar
               </Button>

@@ -22,9 +22,6 @@ const App = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      if (user) {
-        navigate("/barber");
-      }
     });
     return () => unsubscribe();
   }, [auth, navigate]);
@@ -57,6 +54,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<LoginPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/index" element={<Index />} />
               <Route
                 path="/barber"
                 element={

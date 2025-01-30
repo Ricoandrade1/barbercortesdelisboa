@@ -111,8 +111,8 @@ const BarberDashboard = () => {
             <p className="text-muted-foreground">Bem-vindo de volta, {barberData.name || 'Barbeiro'}</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => {
-                navigate('/index');
+           <Button variant="outline" onClick={() => {
+                navigate('/index', { replace: true });
               }}>
                 Voltar
               </Button>
