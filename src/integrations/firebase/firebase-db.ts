@@ -114,7 +114,7 @@ export const getBarberByEmail = async (email: string): Promise<Barber | null> =>
   })) as Barber[];
   return barbers.find(barber => {
     console.log("Database email:", barber.email);
-    return barber.email.trim().toLowerCase() === email.trim().toLowerCase()
+    return barber.email && barber.email.trim().toLowerCase() === email.trim().toLowerCase()
   }) || null;
 };
 

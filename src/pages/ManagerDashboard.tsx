@@ -247,12 +247,19 @@ const ManagerDashboard = () => {
             <AddProductModal />
             <AddBarberModal onBarberAdded={handleAddBarber} />
             <AddServiceModal fetchData={fetchData} /> {/* Add AddServiceModal button */}
-            <Button variant="outline" onClick={() => {
-              signOut(auth);
-              navigate('/login');
-            }}>
-              Sair
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => {
+                navigate('/login');
+              }}>
+                Voltar
+              </Button>
+              <Button variant="outline" onClick={() => {
+                signOut(auth);
+                navigate('/login');
+              }}>
+                Sair
+              </Button>
+            </div>
           </div>
         </div>
         <div className="grid md:grid-cols-4 gap-6">

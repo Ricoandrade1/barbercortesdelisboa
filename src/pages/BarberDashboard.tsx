@@ -107,12 +107,19 @@ const BarberDashboard = () => {
             <h1 className="text-3xl font-bold text-primary">Dashboard do Barbeiro</h1>
             <p className="text-muted-foreground">Bem-vindo de volta, {barberData.name || 'Barbeiro'}</p>
           </div>
-          <Button variant="outline" onClick={() => {
-              signOut(auth);
-              navigate('/login');
-            }}>
-              Sair
-            </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => {
+                navigate('/login');
+              }}>
+                Voltar
+              </Button>
+            <Button variant="outline" onClick={() => {
+                signOut(auth);
+                navigate('/login');
+              }}>
+                Sair
+              </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

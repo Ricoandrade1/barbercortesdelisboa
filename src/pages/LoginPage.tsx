@@ -1,65 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/integrations/firebase/firebase-config";
 import { toast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { db } from "@/integrations/firebase/firebase-config";
-import { doc, setDoc } from "firebase/firestore";
+import { addBarber } from "@/integrations/firebase/firebase-db";
 
 const LoginPage = () => {
-  const [createEmail, setCreateEmail] = useState("");
-  const [createPassword, setCreatePassword] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [openCreateAccountModal, setOpenCreateAccountModal] = useState(false);
   const [openForgotPasswordModal, setOpenForgotPasswordModal] = useState(false);
   const navigate = useNavigate();
   const emailInputRef = useRef(null);
-
-  const handleCreateAccount = async () => {
-    try {
-      const createEmailInput = document.getElementById('create-email') as HTMLInputElement;
-      const createPasswordInput = document.getElementById('create-password') as HTMLInputElement;
-      const createUnidadeSelect = document.getElementById('create-unidade') as HTMLSelectElement;
-      const createTelefoneInput = document.getElementById('create-telefone') as HTMLInputElement;
-
-      const email = createEmailInput.value;
-      const password = createPasswordInput.value;
-      const unidade = createUnidadeSelect.value;
-      const telefone = createTelefoneInput.value;
-
-      if (!email || !password || !unidade || !telefone) {
-        toast({
-          variant: "destructive",
-          title: "Erro ao criar conta",
-          description: "Por favor, preencha todos os campos.",
-        });
-        return;
-      }
-
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      const userDocRef = doc(db, "barbers", user.uid);
-      await setDoc(userDocRef, {
-        unidade: unidade,
-        telefone: telefone,
-        displayName: unidade,
-      });
-      console.log("Dados do usuário enviados para o Firestore:", {
-        unidade: unidade,
-        telefone: telefone,
-        displayName: unidade,
-      });
-
-      toast({ title: "Conta criada com sucesso!" });
-      setOpenCreateAccountModal(false);
-    } catch (error) {
-      console.error("Erro ao criar conta:", error);
-      toast({ variant: "destructive", title: "Erro ao criar conta", description: error.message });
-    }
-  };
 
   useEffect(() => {
     if (emailInputRef.current) {
@@ -152,7 +105,6 @@ const LoginPage = () => {
                     id="create-email"
                     placeholder="seuemail@exemplo.com"
                     className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
-                    required
                   />
                 </div>
                 <div>
@@ -161,7 +113,6 @@ const LoginPage = () => {
                     type="password"
                     id="create-password"
                     className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
-                    required
                   />
                 </div>
                 <div>
@@ -169,7 +120,6 @@ const LoginPage = () => {
                   <select
                     id="create-unidade"
                     className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
-                    required
                   >
                     <option value="alcantara">Alcântara</option>
                     <option value="alegro-alfragide">Alegro Alfragide</option>
@@ -190,13 +140,32 @@ const LoginPage = () => {
                     id="create-telefone"
                     placeholder="912345678"
                     className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
-                    required
                   />
                 </div>
               </div>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleCreateAccount}>Criar Conta</AlertDialogAction>
+              <AlertDialogAction onClick={async () => {
+                const createEmail = (document.getElementById('create-email') as HTMLInputElement).value;
+                const createPassword = (document.getElementById('create-password') as HTMLInputElement).value;
+                const createUnidade = (document.getElementById('create-unidade') as HTMLSelectElement).value;
+                const createTelefone = (document.getElementById('create-telefone') as HTMLInputElement).value;
+                try {
+                  const { user } = await createUserWithEmailAndPassword(auth, createEmail, createPassword);
+                  await addBarber({
+                    email: createEmail,
+                    unit: createUnidade,
+                    phone: createTelefone,
+                    name: createEmail,
+                    balance: 0,
+                  });
+                  toast({ title: "Conta criada com sucesso!" });
+                  setOpenCreateAccountModal(false);
+                } catch (error) {
+                  console.error("Erro ao criar conta:", error);
+                  toast({ variant: "destructive", title: "Erro ao criar conta", description: error.message });
+                }
+              }}>Criar Conta</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

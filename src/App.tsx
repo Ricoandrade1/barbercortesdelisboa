@@ -19,6 +19,7 @@ const App = () => {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
+      console.log("User auth state changed:", user);
       setIsAuthenticated(!!user);
     });
   }, [auth]);
