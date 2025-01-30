@@ -8,11 +8,13 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const emailInputRef = useRef(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (emailInputRef.current) {
       emailInputRef.current.focus();
+      console.log("Email input focused");
     }
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -70,10 +72,18 @@ const LoginPage = () => {
                 console.log("Password input changed:", e.target.value);
                 setPassword(e.target.value);
               }}
+              ref={passwordInputRef}
               className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          <button type="submit" className="w-full bg-primary text-white py-2 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">
+          <button type="submit" className="w-full bg-primary text-white py-2 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light"
+          onClick={() => {
+            if (emailInputRef.current) {
+              emailInputRef.current.focus();
+              console.log("Email input focused on button click");
+            }
+          }}
+          >
             Iniciar Sessão
           </button>
         </form>

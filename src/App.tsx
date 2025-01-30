@@ -19,6 +19,7 @@ const App = () => {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
+      console.log("Auth state changed:", !!user);
       setIsAuthenticated(!!user);
     });
   }, [auth]);
@@ -34,7 +35,12 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LoginPage />} />
+            <Route
+              path="/"
+              element={
+                isAuthenticated ? <Navigate to="/barber" /> : <LoginPage />
+              }
+            />
             <Route path="/login" element={<LoginPage />} />
             <Route
               path="/barber"
