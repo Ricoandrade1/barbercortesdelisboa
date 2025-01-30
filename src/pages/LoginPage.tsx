@@ -115,6 +115,7 @@ const LoginPage = () => {
                   placeholder="seuemail@exemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="off"
                 />
               </div>
               <div className="grid gap-2">
@@ -124,6 +125,7 @@ const LoginPage = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="off"
                 />
               </div>
               {!isLogin && (
