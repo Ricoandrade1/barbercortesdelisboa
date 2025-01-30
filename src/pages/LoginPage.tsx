@@ -116,6 +116,7 @@ const LoginPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="off"
+                  autoFocus
                 />
               </div>
               <div className="grid gap-2">
