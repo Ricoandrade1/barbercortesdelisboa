@@ -1,32 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, getAuth, sendPasswordResetEmail, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/integrations/firebase/firebase-config";
 import { addBarber } from "@/integrations/firebase/firebase-db";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { DownloadIphoneButton } from "@/components/DownloadIphoneButton";
 
 const LoginPage = () => {
-  const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [unit, setUnit] = useState("");
-  const [isLogin, setIsLogin] = useState(true); // State to toggle between Login and Register
+  const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigate("/access-control");
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -70,14 +68,12 @@ const LoginPage = () => {
         title: "Email enviado!",
         description: "Verifique sua caixa de entrada para redefinir sua senha.",
       });
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast({
-          variant: "destructive",
-          title: "Erro ao enviar email",
-          description: error.message,
-        });
-      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao enviar email",
+        description: error.message,
+      });
     }
   };
 
@@ -89,63 +85,24 @@ const LoginPage = () => {
         description: "Sessão terminada.",
       });
       navigate("/"); // Redirect to home or login page after logout
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast({
-          variant: "destructive",
-          title: "Erro ao fazer logout",
-          description: error.message,
-        });
-      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao fazer logout",
+        description: error.message,
+      });
     }
   };
 
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100 overflow-y-auto overflow-x-hidden">
+      <div className="fixed top-0 right-0 p-2 z-50 flex flex-col items-end">
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2 pb-4">
           <CardTitle>{isLogin ? "Iniciar Sessão" : "Registar Conta"}</CardTitle>
           <CardDescription>Entre com as suas credenciais para aceder à plataforma</CardDescription>
-          <div className="flex space-x-2 mt-2">
-            {navigator.userAgent.match(/iPhone|iPad|iPod/i) ? (
-              <DownloadIphoneButton />
-            ) : (
-              <Button size="sm" variant="ghost" onClick={() => {
-                if (window.deferredPrompt) {
-                  window.deferredPrompt.prompt();
-                }
-                setOpen(true);
-              }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                <span className="text-xs">Instalar App</span>
-              </Button>
-            )}
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Instalar App</DialogTitle>
-                  <DialogDescription>
-                    Clique em "Baixar" para instalar o app.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button onClick={() => {
-                    try {
-                      if (window.deferredPrompt) {
-                        window.deferredPrompt.prompt();
-                      }
-                    } catch (error) {
-                      console.error("Error showing install prompt:", error);
-                    }
-                    setOpen(false);
-                  }}>
-                    Baixar
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
         </CardHeader>
         <CardContent className="grid gap-4 overflow-y-auto max-h-[400px]">
           <form onSubmit={handleSubmit}>
