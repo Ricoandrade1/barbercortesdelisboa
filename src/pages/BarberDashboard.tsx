@@ -100,7 +100,7 @@ const BarberDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
