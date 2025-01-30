@@ -22,11 +22,12 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
   const [services, setServices] = useState<ServiceType[]>([]);
   const [extraServices, setExtraServices] = useState<ServiceType[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedService, setSelectedService] = useState("")
-  const [clientName, setClientName] = useState("")
-  const [extraService, setExtraService] = useState("")
-  const [selectedProduct, setSelectedProduct] = useState("")
-  const [quantity, setQuantity] = useState("1")
+  const [selectedService, setSelectedService] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [extraService, setExtraService] = useState("");
+  const [extraService2, setExtraService2] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState("");
+  const [quantity, setQuantity] = useState("1");
   const [key, setKey] = useState(0);
 
   useEffect(() => {
@@ -81,15 +82,15 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
   };
 
     const handleServiceSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
-    if (!selectedService && !extraService) {
+    if (!selectedService && !extraService && !extraService2) {
       toast({
         variant: "destructive",
         title: "Erro",
         description: "Por favor selecione um serviço ou serviço extra.",
-      })
-      return
+      });
+      return;
     }
     
     let clientNameToUse = clientName;
@@ -103,6 +104,8 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
     let selectedServiceData;
     let extraServicePrice = 0;
     let extraServiceName = "";
+    let extraService2Price = 0;
+    let extraService2Name = "";
 
     if (selectedService) {
       selectedServiceData = services.find(s => s.id === selectedService);
@@ -111,8 +114,8 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
           variant: "destructive",
           title: "Erro",
           description: "Serviço não encontrado.",
-        })
-        return
+        });
+        return;
       }
     }
 
@@ -120,6 +123,12 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       const selectedExtraServiceData = extraServices.find(s => s.id === extraService);
       extraServicePrice = selectedExtraServiceData?.price || 0;
       extraServiceName = selectedExtraServiceData?.name || "";
+    }
+
+    if (extraService2) {
+      const selectedExtraServiceData2 = extraServices.find(s => s.id === extraService2);
+      extraService2Price = selectedExtraServiceData2?.price || 0;
+      extraService2Name = selectedExtraServiceData2?.name || "";
     }
 
     if (!user || !user.email) {
@@ -133,51 +142,48 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
     
     let serviceDetails;
     if (selectedService) {
-      let extraServicePrice = 0;
-      let extraServiceName = "";
-      if (extraService) {
-        const selectedExtraServiceData = extraServices.find(s => s.id === extraService);
-        extraServicePrice = selectedExtraServiceData?.price || 0;
-        extraServiceName = selectedExtraServiceData?.name || "";
-      }
+      
       const selectedServiceData = services.find(s => s.id === selectedService);
       serviceDetails = {
         barberName: user.email,
         serviceName: selectedServiceData?.name || 'Unknown Service',
         clientName,
-        extraService: extraServiceName,
+        extraService:  extraService ? extraServiceName : null,
+        extraService2: extraService2Name || null,
         date: new Date().toISOString(),
-        price: (selectedServiceData?.price || 0) + extraServicePrice,
-        commission: ((selectedServiceData?.price || 0) + extraServicePrice) * 0.4,
+        price: (selectedServiceData?.price || 0) + extraServicePrice + extraService2Price,
+        commission: ((selectedServiceData?.price || 0) + extraServicePrice + extraService2Price) * 0.4,
       };
     } else {
-      const selectedExtraServiceData = extraServices.find(s => s.id === extraService);
+      
       serviceDetails = {
         barberName: user.email,
-        serviceName: selectedExtraServiceData?.name || 'Unknown Service',
+        serviceName: 'Unknown Service',
         clientName,
-        extraService: selectedExtraServiceData?.name || "",
+        extraService: extraService ? extraServiceName : null,
+        extraService2: extraService2Name || null,
         date: new Date().toISOString(),
-        price: selectedExtraServiceData?.price || 0,
-        commission: (selectedExtraServiceData?.price || 0) * 0.4,
+        price: extraServicePrice + extraService2Price,
+        commission: (extraServicePrice + extraService2Price) * 0.4,
       };
     }
 
     try {
       await addProductionResult(serviceDetails);
-      console.log("Service recorded:", serviceDetails)
+      console.log("Service recorded:", serviceDetails);
       
       toast({
         title: "Serviço registrado com sucesso!",
         description: `${selectedServiceData?.name} para ${clientName}`,
-      })
+      });
 
-      setSelectedService(prev => null)
-      setClientName(prev => null)
-      setExtraService(prev => "")
+      setSelectedService("");
+      setClientName("");
+      setExtraService("");
+      setExtraService2("");
 
       if (onServiceComplete) {
-        onServiceComplete(serviceDetails)
+        onServiceComplete(serviceDetails);
       }
       toast({
         title: "Serviço registrado com sucesso!",
@@ -191,11 +197,11 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         description: "Por favor tente novamente.",
       });
     }
-  }
+  };
   
 
   const handleProductSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     if (!selectedProduct || !quantity) {
       return toast({
@@ -205,7 +211,7 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       });
     }
 
-      const product = products.find(p => p.id === selectedProduct)
+      const product = products.find(p => p.id === selectedProduct);
       if (!product) {
         console.log("Product not found:", selectedProduct, products); // ADDED CONSOLE LOG
         return toast({
@@ -224,7 +230,7 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       }
       console.log("Selected product:", product);
 
-      const { vatAmount, totalPrice, commission } = calculateProductPrices(product.basePrice)
+      const { vatAmount, totalPrice, commission } = calculateProductPrices(product.basePrice);
       const auth = getAuth();
       const user = auth.currentUser;
 
@@ -248,20 +254,20 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         commission: vatAmount,
         date: new Date().toISOString(),
         serviceName: 'Product Sale'
-      }
+      };
 
     try {
       await addProductionResult(productSale);
-      console.log("Product sale recorded:", productSale)
+      console.log("Product sale recorded:", productSale);
       
       toast({
         title: "Venda realizada com sucesso!",
         description: `${product.name} x${quantity}`,
         className: "bg-green-500 text-white",
-      })
+      });
 
-      setSelectedProduct(prev => "")
-      setQuantity(prev => "1")
+      setSelectedProduct("");
+      setQuantity("1");
       fetchData();
     } catch (error) {
       console.error("Error in handleProductSubmit:", error);
@@ -269,9 +275,9 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         variant: "destructive",
         title: "Erro ao registrar venda",
         description: "Por favor tente novamente.",
-      })
+      });
     }
-  }
+  };
 
   return (
     <Tabs defaultValue="services" className="w-full" onValueChange={(value) => {
@@ -279,6 +285,7 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         setSelectedService("");
         setClientName("");
         setExtraService("");
+        setExtraService2("");
       }
       setSelectedProduct("");
       setQuantity("1");
@@ -321,6 +328,21 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
               <Label htmlFor="extra-service">Serviço Extra</Label>
               <Select key={extraService} value={extraService} onValueChange={setExtraService}>
                 <SelectTrigger id="extra-service">
+                  <SelectValue placeholder="Selecione o serviço extra (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {extraServices.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} - €{service.price}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="extra-service2">Serviço Extra 2</Label>
+              <Select key={extraService2} value={extraService2} onValueChange={setExtraService2}>
+                <SelectTrigger id="extra-service2">
                   <SelectValue placeholder="Selecione o serviço extra (opcional)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -403,5 +425,5 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         </Card>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

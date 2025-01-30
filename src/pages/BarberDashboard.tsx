@@ -322,7 +322,11 @@ const BarberDashboard = () => {
                       }
                       return (
                         <tr key={result.id} className="border-b">
-                          <td className="py-3 px-4">{result.serviceName}</td>
+                          <td className="py-3 px-4">
+                            {result.serviceName === 'Product Sale' ? result.productName : (result.serviceName !== 'Unknown Service' ? result.serviceName : '')}
+                            {result.extraService && ` ${result.extraService}`}
+                             {result.extraService2 && ` ${result.extraService2}`}
+                          </td>
                           <td className="py-3 px-4">{result.clientName}</td>
                           <td className="text-right py-3 px-4">€{Number(result.price)?.toFixed(2) || 0}</td>
                           <td className="text-right py-3 px-4">€{(Number(result.price) * 0.4)?.toFixed(2) || 0}</td>
