@@ -112,7 +112,7 @@ const BarberDashboard = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => {
-                navigate('/login');
+                navigate('/index');
               }}>
                 Voltar
               </Button>
