@@ -20,7 +20,7 @@ const LoginPage = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate("/access-control");
+        navigate("/barber-dashboard");
       }
     });
     return () => unsubscribe();
