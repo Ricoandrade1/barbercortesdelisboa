@@ -21,6 +21,8 @@ const App = () => {
     onAuthStateChanged(auth, (user) => {
       console.log("User auth state changed:", user);
       setIsAuthenticated(!!user);
+    }, (error) => {
+      console.error("Error in onAuthStateChanged:", error);
     });
   }, [auth]);
 
