@@ -353,7 +353,10 @@ const BarberDashboard = () => {
                                   if (result.id) {
                                     await deleteDoc(doc(db, 'productionResults', result.id));
                                     fetchData();
-                                    window.location.reload()
+                                    toast({
+                                      title: "Serviço excluído com sucesso!",
+                                      description: `${result.serviceName || 'Serviço'} para ${result.clientName || 'Cliente'}`,
+                                    });
                                   }
                                 }}>
                                 Excluir

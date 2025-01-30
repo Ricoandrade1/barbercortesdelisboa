@@ -187,10 +187,10 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       }
       toast({
         title: "Serviço registrado com sucesso!",
-        description: `${selectedServiceData?.name} para ${clientName}`,
+        description: `${selectedServiceData?.name || 'Serviço'} para ${clientName || 'Cliente'}`,
       });
       fetchData();
-    } catch (error) {
+    }  catch (error) {
       toast({
         variant: "destructive",
         title: "Erro ao registrar serviço",
