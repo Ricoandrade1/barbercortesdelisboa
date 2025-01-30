@@ -24,7 +24,7 @@ const LoginPage = () => {
     }
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate("/barber-dashboard");
+        navigate("/barber");
       }
     });
     return () => unsubscribe();
@@ -33,7 +33,7 @@ const LoginPage = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate("/barber-dashboard");
+        navigate("/barber");
       }
     });
     return () => unsubscribe();
@@ -110,8 +110,6 @@ const LoginPage = () => {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100 overflow-y-auto overflow-x-hidden">
-      <div className="fixed top-0 right-0 p-2 z-50 flex flex-col items-end">
-      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2 pb-4">
           <CardTitle>{isLogin ? "Iniciar Sessão" : "Registar Conta"}</CardTitle>
@@ -124,24 +122,28 @@ const LoginPage = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
-                  type="text"
+                  type="email"
                   placeholder="seuemail@exemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="off"
                   autoFocus
                   key="email-input"
+                  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+                  onClick={() => emailInputRef.current?.focus()}
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
-                  type="text"
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="off"
                   key="password-input"
+                  pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                  onClick={() => document.getElementById('password')?.focus()}
                 />
               </div>
               {!isLogin && (
