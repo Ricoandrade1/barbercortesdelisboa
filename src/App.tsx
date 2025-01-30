@@ -36,7 +36,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div style={{ paddingTop: '20px' }}>
+          <div style={{ paddingTop: '40px' }}>
             <Routes>
               <Route path="/" element={<LoginPage />} />
               <Route path="/login" element={<LoginPage />} />
