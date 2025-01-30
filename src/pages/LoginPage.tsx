@@ -18,13 +18,7 @@ const LoginPage = () => {
     if (emailInputRef.current) {
       emailInputRef.current.focus();
     }
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        navigate("/access-control");
-      }
-    });
-    return () => unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

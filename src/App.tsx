@@ -8,26 +8,26 @@ import BarberDashboard from "./pages/BarberDashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import LoginPage from "./pages/LoginPage";
 import AccessControlPage from "./pages/AccessControlPage"; // Import AccessControlPage
-import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const auth = getAuth();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(auth.currentUser ? true : false);
-
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        console.log("User auth state changed:", user);
-        setIsAuthenticated(!!user);
-    }, (error) => {
-        console.error("Error in onAuthStateChanged:", error);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+      if (user) {
+        navigate("/barber");
+      }
     });
-
     return () => unsubscribe();
-  }, [auth]);
+  }, [auth, navigate]);
 
   useEffect(() => {
     const handleOnline = () => {
