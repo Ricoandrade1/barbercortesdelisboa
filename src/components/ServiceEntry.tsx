@@ -275,12 +275,6 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
 
   return (
     <Tabs defaultValue="services" className="w-full" onValueChange={(value) => {
-      setSelectedService("");
-      setClientName("");
-      setExtraService("");
-      setSelectedProduct("");
-      setQuantity("1");
-    }} onValueChange={(value) => {
       if (value !== "products") {
         setSelectedService("");
         setClientName("");

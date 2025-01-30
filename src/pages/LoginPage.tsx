@@ -1,17 +1,65 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/integrations/firebase/firebase-config";
 import { toast } from "@/hooks/use-toast";
-import { AlertDialog } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { db } from "@/integrations/firebase/firebase-config";
+import { doc, setDoc } from "firebase/firestore";
 
 const LoginPage = () => {
+  const [createEmail, setCreateEmail] = useState("");
+  const [createPassword, setCreatePassword] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [openCreateAccountModal, setOpenCreateAccountModal] = useState(false);
   const [openForgotPasswordModal, setOpenForgotPasswordModal] = useState(false);
   const navigate = useNavigate();
   const emailInputRef = useRef(null);
+
+  const handleCreateAccount = async () => {
+    try {
+      const createEmailInput = document.getElementById('create-email') as HTMLInputElement;
+      const createPasswordInput = document.getElementById('create-password') as HTMLInputElement;
+      const createUnidadeSelect = document.getElementById('create-unidade') as HTMLSelectElement;
+      const createTelefoneInput = document.getElementById('create-telefone') as HTMLInputElement;
+
+      const email = createEmailInput.value;
+      const password = createPasswordInput.value;
+      const unidade = createUnidadeSelect.value;
+      const telefone = createTelefoneInput.value;
+
+      if (!email || !password || !unidade || !telefone) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao criar conta",
+          description: "Por favor, preencha todos os campos.",
+        });
+        return;
+      }
+
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userDocRef = doc(db, "barbers", user.uid);
+      await setDoc(userDocRef, {
+        unidade: unidade,
+        telefone: telefone,
+        displayName: unidade,
+      });
+      console.log("Dados do usuário enviados para o Firestore:", {
+        unidade: unidade,
+        telefone: telefone,
+        displayName: unidade,
+      });
+
+      toast({ title: "Conta criada com sucesso!" });
+      setOpenCreateAccountModal(false);
+    } catch (error) {
+      console.error("Erro ao criar conta:", error);
+      toast({ variant: "destructive", title: "Erro ao criar conta", description: error.message });
+    }
+  };
 
   useEffect(() => {
     if (emailInputRef.current) {
@@ -89,15 +137,14 @@ const LoginPage = () => {
           </div>
         </form>
         <AlertDialog open={openCreateAccountModal} onOpenChange={setOpenCreateAccountModal}>
-          <AlertDialog.Content>
-            <AlertDialog.Header>
-              <AlertDialog.Title>Criar Conta</AlertDialog.Title>
-              <AlertDialog.Description>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Criar Conta</AlertDialogTitle>
+              <AlertDialogDescription>
                 Preencha os campos abaixo para criar uma nova conta.
-              </AlertDialog.Description>
-            </AlertDialog.Header>
-            <AlertDialog.Body>
-              <div className="space-y-4">
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-4">
                 <div>
                   <label htmlFor="create-email" className="block text-gray-700 text-sm font-bold mb-2">Email</label>
                   <input
@@ -105,6 +152,7 @@ const LoginPage = () => {
                     id="create-email"
                     placeholder="seuemail@exemplo.com"
                     className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                    required
                   />
                 </div>
                 <div>
@@ -113,29 +161,54 @@ const LoginPage = () => {
                     type="password"
                     id="create-password"
                     className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="create-unidade" className="block text-gray-700 text-sm font-bold mb-2">Unidade</label>
+                  <select
+                    id="create-unidade"
+                    className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  >
+                    <option value="alcantara">Alcântara</option>
+                    <option value="alegro-alfragide">Alegro Alfragide</option>
+                    <option value="cascaishopping">CascaiShopping</option>
+                    <option value="colombo">Colombo</option>
+                    <option value="loureshopping">LoureShopping</option>
+                    <option value="alegro-sintra">Alegro Sintra</option>
+                    <option value="braga-parque">Braga Parque</option>
+                    <option value="evora-plaza">Évora Plaza</option>
+                    <option value="forum-coimbra">Forum Coimbra</option>
+                    <option value="leiria-shopping">LeiriaShopping</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="create-telefone" className="block text-gray-700 text-sm font-bold mb-2">Telefone</label>
+                  <input
+                    type="tel"
+                    id="create-telefone"
+                    placeholder="912345678"
+                    className="w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                    required
                   />
                 </div>
               </div>
-            </AlertDialog.Body>
-            <AlertDialog.Footer>
-              <AlertDialog.Cancel>Cancelar</AlertDialog.Cancel>
-              <AlertDialog.Action onClick={() => {
-                toast({ title: "Conta criada com sucesso!" });
-                setOpenCreateAccountModal(false);
-              }}>Criar Conta</AlertDialog.Action>
-            </AlertDialog.Footer>
-          </AlertDialog.Content>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleCreateAccount}>Criar Conta</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
         </AlertDialog>
         <AlertDialog open={openForgotPasswordModal} onOpenChange={setOpenForgotPasswordModal}>
-          <AlertDialog.Content>
-            <AlertDialog.Header>
-              <AlertDialog.Title>Esqueci a Senha</AlertDialog.Title>
-              <AlertDialog.Description>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Esqueci a Senha</AlertDialogTitle>
+              <AlertDialogDescription>
                 Introduza o seu email para receber um link de recuperação de senha.
-              </AlertDialog.Description>
-            </AlertDialog.Header>
-            <AlertDialog.Body>
-              <div className="space-y-4">
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-4">
                 <div>
                   <label htmlFor="reset-email" className="block text-gray-700 text-sm font-bold mb-2">Email</label>
                   <input
@@ -146,21 +219,21 @@ const LoginPage = () => {
                   />
                 </div>
               </div>
-            </AlertDialog.Body>
-            <AlertDialog.Footer>
-              <AlertDialog.Cancel>Cancelar</AlertDialog.Cancel>
-              <AlertDialog.Action onClick={async () => {
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={async () => {
                 try {
-                  const resetEmail = resetEmailInputRef.current.value;
-                  await getAuth().sendPasswordResetEmail(resetEmail);
+                  await sendPasswordResetEmail(auth, (document.getElementById('reset-email') as HTMLInputElement).value);
+                  console.log("Email de recuperação enviado com sucesso!");
                   toast({ title: "Email de recuperação enviado!" });
                   setOpenForgotPasswordModal(false);
                 } catch (error) {
+                  console.error("Erro ao enviar email de recuperação:", error);
                   toast({ variant: "destructive", title: "Erro ao enviar email", description: error.message });
                 }
-              }}>Enviar Email</AlertDialog.Action>
-            </AlertDialog.Footer>
-          </AlertDialog.Content>
+              }}>Enviar Email</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
         </AlertDialog>
       </div>
     </div>

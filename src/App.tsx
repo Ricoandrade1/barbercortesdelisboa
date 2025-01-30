@@ -30,7 +30,6 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="body-with-padding">
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -57,7 +56,6 @@ const App = () => {
             />
           </Routes>
         </BrowserRouter>
-        </div>
       </TooltipProvider>
     </QueryClientProvider>
   );

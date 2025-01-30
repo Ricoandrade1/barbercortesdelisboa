@@ -44,7 +44,7 @@ const BarberDashboard = () => {
   const [open, setOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
   const [barberShops, setBarberShops] = useState([]);
   const [selectedBarberShop, setSelectedBarberShop] = useState('');

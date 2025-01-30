@@ -14,9 +14,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { addProduct } from "@/integrations/firebase/firebase-db";
 
-interface AddProductModalProps {}
+interface ProductModalProps {}
 
-export function AddProductModal({}: AddProductModalProps) {
+export function AddProductModal({}: ProductModalProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
