@@ -36,28 +36,30 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/barber"
-              element={
-                isAuthenticated ? <BarberDashboard /> : <Navigate to="/login" />
-              }
-            />
-            <Route
-              path="/manager"
-              element={
-                isAuthenticated ? <ManagerDashboard /> : <Navigate to="/login" />
-              }
-            />
-             <Route
-              path="/access-control"
-              element={
-                isAuthenticated ? <AccessControlPage /> : <Navigate to="/login" />
-              }
-            />
-          </Routes>
+          <div style={{ paddingTop: '20px' }}>
+            <Routes>
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/barber"
+                element={
+                  isAuthenticated ? <BarberDashboard /> : <Navigate to="/login" />
+                }
+              />
+              <Route
+                path="/manager"
+                element={
+                  isAuthenticated ? <ManagerDashboard /> : <Navigate to="/login" />
+                }
+              />
+               <Route
+                path="/access-control"
+                element={
+                  isAuthenticated ? <AccessControlPage /> : <Navigate to="/login" />
+                }
+              />
+            </Routes>
+          </div>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
