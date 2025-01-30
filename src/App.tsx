@@ -14,27 +14,11 @@ import { useState, useEffect } from 'react';
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const auth = getAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(auth.currentUser ? true : false);
+
 
   useEffect(() => {
-    const checkUserAuth = async () => {
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          console.log("User auth state changed:", user);
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error("Error checking auth state:", error);
-        setIsAuthenticated(false);
-      }
-    };
-
-    checkUserAuth();
-
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
         console.log("User auth state changed:", user);
         setIsAuthenticated(!!user);
