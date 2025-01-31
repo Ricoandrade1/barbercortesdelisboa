@@ -97,7 +97,6 @@ const ManagerDashboard = () => {
   }, [productionResults, productCommissionPercentage, serviceCommissionPercentage]);
 
   const fetchData = async () => {
-    console.log("fetchData called..."); // ADDED console.log
     setLoading(true);
     try {
       const productsData = await getProducts();
@@ -108,7 +107,7 @@ const ManagerDashboard = () => {
       setProductionResults(productionResultsData); // Set production results state
       const barbersData = await getBarbers();
       setBarbers(barbersData);
-      console.log("fetchData finished, products:", productsData); // ADDED console.log
+      // Removido console.log
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
@@ -154,8 +153,7 @@ const ManagerDashboard = () => {
 
   const handleExportReport = async () => {
     try {
-      console.log("Products:", products);
-      console.log("Barbers:", barbers);
+      // Removido console.log de Products e Barbers
     let filteredBarbers = barbers;
     let filteredProducts = products;
     let filteredProductionResults = productionResults;
@@ -216,10 +214,10 @@ const ManagerDashboard = () => {
   };
 
   const onDeleteProduct = async (productId: string) => {
-    console.log("onDeleteProduct called for productId:", productId); // ADDED console.log
+    // Removido console.log
     try {
       await deleteProduct(productId);
-      console.log("deleteProduct finished for productId:", productId); // ADDED console.log
+      // Removido console.log
       toast({
         title: "Produto excluído",
         description: "Produto removido com sucesso.",

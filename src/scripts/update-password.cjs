@@ -55,7 +55,6 @@ var updatePassword = function (newPassword, docId) { return __awaiter(void 0, vo
                 return [4 /*yield*/, (0, firestore_1.updateDoc)(docRef, { password: hashedPassword })];
             case 2:
                 _a.sent();
-                console.log("Password for ".concat(docId, " updated successfully."));
                 return [3 /*break*/, 4];
             case 3:
                 error_1 = _a.sent();

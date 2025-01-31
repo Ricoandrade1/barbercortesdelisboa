@@ -67,7 +67,6 @@ const BarberDashboard = () => {
   useEffect(() => {
     const fetchBarberData = async () => {
       if (user && user.email) {
-        console.log("Fetching barber data for email:", user.email);
         const data = await getBarberByEmail(user.email);
         setBarberData(data);
         if (data?.profilePicture) {
