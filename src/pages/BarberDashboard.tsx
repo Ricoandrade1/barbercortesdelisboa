@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { getBarberByEmail, db, updateBarber, getBarbers } from '@/integrations/firebase/firebase-db';
+import ShareButton from '@/components/ShareButton';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -110,8 +111,8 @@ const BarberDashboard = () => {
             <h1 className="text-3xl font-bold text-primary">Dashboard do Barbeiro</h1>
             <p className="text-muted-foreground">Bem-vindo de volta, {barberData.name || 'Barbeiro'}</p>
           </div>
-          <div className="flex gap-2">
-           <Button variant="outline" onClick={() => {
+          <div className="flex gap-2 items-center">
+            <Button variant="outline" onClick={() => {
                 navigate('/index', { replace: true });
               }}>
                 Voltar
@@ -122,6 +123,7 @@ const BarberDashboard = () => {
               }}>
                 Sair
               </Button>
+            <ShareButton />
           </div>
         </div>
 
