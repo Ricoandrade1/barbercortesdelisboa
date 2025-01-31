@@ -25,7 +25,7 @@ const ShareButton = () => {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Instalar PWA</AlertDialogTitle>
+          <AlertDialogTitle>Instalar Boss Wallet</AlertDialogTitle>
           <AlertDialogDescription>
             Escaneie o código QR abaixo para instalar o aplicativo.
           </AlertDialogDescription>
