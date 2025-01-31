@@ -32,7 +32,7 @@ const AccessControlPage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary">Cortes de Lisboa</h1>
+        <h1 className="text-3xl font-bold text-primary">Boss Wallet</h1>
         <p className="text-muted-foreground">Selecione seu portal de acesso</p>
       </div>
       <div className="flex space-x-4">

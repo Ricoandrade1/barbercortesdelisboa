@@ -30,6 +30,44 @@ import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const getMonday = (date) => {
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when date is sunday
+  return new Date(date.setDate(diff));
+};
+
+const sortProductionResults = (results) => {
+  const today = new Date();
+  const monday = getMonday(today);
+
+  const dailyProduction = {};
+
+  results.forEach((result) => {
+    const date = new Date(result.date);
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    const dayOfWeek = new Date(date.setDate(diff)).toLocaleDateString('pt-PT', { weekday: 'short' });
+
+    if (!dailyProduction[dayOfWeek]) {
+      dailyProduction[dayOfWeek] = 0;
+    }
+    dailyProduction[dayOfWeek] += (result.totalPrice || result.price || 0);
+  });
+
+  const daysOfWeek = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
+  return [...results].sort((a, b) => {
+    const today = new Date();
+    const monday = getMonday(today);
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+
+    const diffA = dateA.getTime() - monday.getTime();
+    const diffB = dateB.getTime() - monday.getTime();
+
+    return diffA - diffB;
+  });
+};
+
 const ManagerDashboard = () => {
   const [products, setProducts] = useState([]);
   const [services, setServices] = useState([]);
@@ -449,7 +487,7 @@ const ManagerDashboard = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {productionResults.map((result) => (
+                  {sortProductionResults(productionResults).map((result) => (
                     <TableRow key={result.id}>
                       <TableCell>{result.barberName}</TableCell>
                       <TableCell>{result.serviceName === 'Product Sale' ? `${result.productName}` : result.serviceName}</TableCell>

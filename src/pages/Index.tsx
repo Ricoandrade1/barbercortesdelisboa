@@ -28,7 +28,7 @@ const Index = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-4xl w-full mx-auto text-center space-y-8 animate-fade-in">
         <h1 className="text-4xl md:text-5xl font-bold text-primary">
-          Cortes de Lisboa
+          Boss Wallet
         </h1>
         <p className="text-lg text-muted-foreground">
           Selecione seu portal de acesso
@@ -67,10 +67,10 @@ const Index = () => {
               <form onSubmit={handleManagerAccess} className="flex flex-col">
                 <Input
                   type="password"
-                  placeholder="( entrar com a ) Senha Master"
+                  placeholder="Senha Master"
                   value={managerPassword}
                   onChange={(e) => setManagerPassword(e.target.value)}
-                  className="w-full"
+                  className="w-full text-center"
                 />
               </form>
             </div>
