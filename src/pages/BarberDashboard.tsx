@@ -47,11 +47,33 @@ const BarberDashboard = () => {
   const [ganhosHojeVisible, setGanhosHojeVisible] = useState(false);
   const [ganhosSemanaVisible, setGanhosSemanaVisible] = useState(false);
   const [totalReceberVisible, setTotalReceberVisible] = useState(false);
+    const [mesAnteriorVisible, setMesAnteriorVisible] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
-  const [barberShops, setBarberShops] = useState([]);
-  const [selectedBarberShop, setSelectedBarberShop] = useState('');
+    const [barberShops, setBarberShops] = useState([]);
+    const [selectedBarberShop, setSelectedBarberShop] = useState('');
+    
+    const getMonthName = (date: Date) => {
+        return date.toLocaleDateString('pt-BR', { month: 'long' });
+    };
+
+    const filterProductionResultsByMonth = (results: any[], month: number, year: number) => {
+        return results.filter(result => {
+            const resultDate = new Date(result.date);
+            return resultDate.getMonth() === month && resultDate.getFullYear() === year;
+        });
+    };
+
+    const calculateTotalEarnings = (results: any[]) => {
+        return results.reduce((sum, result) => {
+            if (result.serviceName === 'Product Sale') {
+                return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
+            } else {
+                return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
+            }
+        }, 0);
+    };
   const auth = getAuth();
   const user = auth.currentUser;
   const navigate = useNavigate();
@@ -222,18 +244,28 @@ const BarberDashboard = () => {
                     {totalReceberVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
-                 <p className="text-3xl font-bold mt-2">
-                  {totalReceberVisible ? `€${productionResults
-                    .reduce((sum, result) => {
-                      if (result.serviceName === 'Product Sale') {
-                        return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
-                      } else {
-                        return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
-                      }
-                    }, 0)
-                    .toFixed(2)}` : '******'}
-                </p>
+                {totalReceberVisible ? (
+                    <p className="text-3xl font-bold mt-2">
+                        €{calculateTotalEarnings(filterProductionResultsByMonth(productionResults, new Date().getMonth(), new Date().getFullYear())).toFixed(2)}
+                    </p>
+                ) : (
+                    <p className="text-3xl font-bold mt-2">******</p>
+                )}
                 <p className="text-sm text-muted-foreground mt-1">Comissões pendentes</p>
+              </Card>
+              <Card className="p-6">
+                <h3 className="text-lg font-medium flex items-center justify-between">
+                  Mês Anterior
+                  <Button variant="ghost" size="icon" onClick={() => setMesAnteriorVisible(!mesAnteriorVisible)}>
+                    {mesAnteriorVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                  </Button>
+                </h3>
+                 <p className="text-3xl font-bold mt-2">
+                    {mesAnteriorVisible ? `€${calculateTotalEarnings(filterProductionResultsByMonth(productionResults, new Date().getMonth() - 1, new Date().getFullYear())).toFixed(2)}` : '******'}
+                </p>
+                 <p className="text-sm text-muted-foreground mt-1">
+                    {mesAnteriorVisible ? getMonthName(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1)) : '******'}
+                </p>
               </Card>
               <Card className="p-6">
                 <h3 className="text-lg font-medium">Serviços Hoje</h3>
@@ -284,11 +316,18 @@ const BarberDashboard = () => {
                     })
                     .reduce((acc, result) => {
                       const day = format(new Date(result.date), 'EEE', { locale: ptBR });
-                      acc[day] = (acc[day] || 0) + (result.price || 0);
+                      const dayIndex = (new Date(result.date).getDay() - 1 + 7) % 7;
+                      const daysOfWeek = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+                      const adjustedDay = daysOfWeek[dayIndex];
+                      acc[adjustedDay] = (acc[adjustedDay] || 0) + (result.price || 0);
                       return acc;
                     }, {})
                   )
                   .map(([name, value]) => ({ name, value }))
+                  .sort((a, b) => {
+                    const daysOfWeek = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+                    return daysOfWeek.indexOf(a.name) - daysOfWeek.indexOf(b.name);
+                  })
                 }>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
