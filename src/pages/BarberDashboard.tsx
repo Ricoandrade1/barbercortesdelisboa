@@ -203,7 +203,7 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Ganhos esta Semana
                   <Button variant="ghost" size="icon" onClick={() => setGanhosSemanaVisible(!ganhosSemanaVisible)}>
-                    {ganhosSemanaVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                    {ganhosSemanaVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 0 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
                  <p className="text-3xl font-bold mt-2">
@@ -211,9 +211,11 @@ const BarberDashboard = () => {
                     .filter(result => {
                       const resultDate = new Date(result.date);
                       const today = new Date();
-                      const diffTime = Math.abs(today.getTime() - resultDate.getTime());
-                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                      return diffDays <= 7;
+                      const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
+                      const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Monday is 1, Sunday is 0
+                      const monday = new Date(today.setDate(diff));
+                      const sunday = new Date(today.setDate(monday.getDate() + 6));
+                      return resultDate >= monday && resultDate <= sunday;
                     })
                     .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
                     .toFixed(2)}` : '******'}
@@ -223,9 +225,11 @@ const BarberDashboard = () => {
                     .filter(result => {
                       const resultDate = new Date(result.date);
                       const today = new Date();
-                      const diffTime = Math.abs(today.getTime() - resultDate.getTime());
-                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                      return diffDays <= 7;
+                      const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
+                      const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Monday is 1, Sunday is 0
+                      const monday = new Date(today.setDate(diff));
+                      const sunday = new Date(today.setDate(monday.getDate() + 6));
+                      return resultDate >= monday && resultDate <= sunday;
                     })
                     .reduce((sum, result) => {
                       if (result.serviceName === 'Product Sale') {
@@ -239,9 +243,40 @@ const BarberDashboard = () => {
               </Card>
               <Card className="p-6">
                 <h3 className="text-lg font-medium flex items-center justify-between">
+                  Produzido este Mês
+                </h3>
+                 <p className="text-3xl font-bold mt-2">
+                  €{productionResults
+                    .filter(result => {
+                      const resultDate = new Date(result.date);
+                      const today = new Date();
+                      return resultDate.getMonth() === today.getMonth() && resultDate.getFullYear() === today.getFullYear();
+                    })
+                    .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
+                    .toFixed(2)}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Comissão: €{productionResults
+                    .filter(result => {
+                      const resultDate = new Date(result.date);
+                      const today = new Date();
+                      return resultDate.getMonth() === today.getMonth() && resultDate.getFullYear() === today.getFullYear();
+                    })
+                    .reduce((sum, result) => {
+                      if (result.serviceName === 'Product Sale') {
+                         return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
+                      } else {
+                        return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
+                      }
+                    }, 0)
+                    .toFixed(2)}
+                </p>
+              </Card>
+              <Card className="p-6">
+                <h3 className="text-lg font-medium flex items-center justify-between">
                   Total a Receber
                   <Button variant="ghost" size="icon" onClick={() => setTotalReceberVisible(!totalReceberVisible)}>
-                    {totalReceberVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                    {totalReceberVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 0 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
                 {totalReceberVisible ? (
@@ -257,7 +292,7 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Mês Anterior
                   <Button variant="ghost" size="icon" onClick={() => setMesAnteriorVisible(!mesAnteriorVisible)}>
-                    {mesAnteriorVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                    {mesAnteriorVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 0 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
                  <p className="text-3xl font-bold mt-2">
@@ -349,6 +384,7 @@ const BarberDashboard = () => {
                       <th className="text-left py-3 px-4">Cliente</th>
                       <th className="text-right py-3 px-4">Valor</th>
                       <th className="text-right py-3 px-4">Comissão</th>
+                      <th className="text-right py-3 px-4">Data/Hora</th>
                       <th className="text-right py-3 px-4">Ações</th>
                     </tr>
                   </thead>
@@ -358,6 +394,13 @@ const BarberDashboard = () => {
                       const dateB = new Date(b.date);
                       return dateB.getTime() - dateA.getTime();
                     }).map((result) => {
+                      const formattedDate = new Date(result.date).toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
                       if (result.serviceName === 'Product Sale') {
                         return (
                           <tr key={result.id} className="border-b">
@@ -365,6 +408,7 @@ const BarberDashboard = () => {
                             <td className="py-3 px-4">{result.barberName}</td>
                             <td className="text-right py-3 px-4">€{result.totalPrice?.toFixed(2) || 0}</td>
                             <td className="text-right py-3 px-4">€{((result.totalPrice || 0) / 1.23 * 0.20).toFixed(2)}</td>
+                            <td className="text-right py-3 px-4">{formattedDate}</td>
                              <td className="text-right py-3 px-4">
                               <Button variant="destructive" size="sm" onClick={async () => {
                                   if (result.id) {
@@ -388,6 +432,7 @@ const BarberDashboard = () => {
                           <td className="py-3 px-4">{result.clientName}</td>
                           <td className="text-right py-3 px-4">€{Number(result.price)?.toFixed(2) || 0}</td>
                           <td className="text-right py-3 px-4">€{(Number(result.price) * 0.4)?.toFixed(2) || 0}</td>
+                          <td className="text-right py-3 px-4">{formattedDate}</td>
                              <td className="text-right py-3 px-4">
                               <Button variant="destructive" size="sm" onClick={async () => {
                                   if (result.id) {
@@ -418,6 +463,7 @@ const BarberDashboard = () => {
                           }
                         }, 0).toFixed(2)}
                       </td>
+                      <td className="text-right font-medium py-2 px-4"></td>
                        <td className="text-right font-medium py-2 px-4"></td>
                     </tr>
                   </tfoot>
