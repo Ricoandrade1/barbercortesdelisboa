@@ -60,14 +60,12 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
       if (productsFromFirebase) {
         setProducts(productsFromFirebase);
       }
-      console.log("Products array after fetch:", productsFromFirebase); // ADDED CONSOLE LOG
     };
     fetchProducts();
   }, []);
 
   useEffect(() => {
-    console.log("Products array:", products);
-  }, [products]);
+    }, [products]);
 
   const calculateProductPrices = (basePrice: number) => {
     if (isNaN(basePrice)) {
@@ -213,7 +211,6 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
 
       const product = products.find(p => p.id === selectedProduct);
       if (!product) {
-        console.log("Product not found:", selectedProduct, products); // ADDED CONSOLE LOG
         return toast({
           variant: "destructive",
           title: "Erro",
@@ -228,7 +225,6 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
           description: "Produto sem preço base.",
         });
       }
-      console.log("Selected product:", product);
 
       const { vatAmount, totalPrice, commission } = calculateProductPrices(product.basePrice);
       const auth = getAuth();

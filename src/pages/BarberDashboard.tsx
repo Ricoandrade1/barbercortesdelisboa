@@ -214,8 +214,8 @@ const BarberDashboard = () => {
                       const today = new Date();
                       const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
                       const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Monday is 1, Sunday is 0
-                      const monday = new Date(today.setDate(diff));
-                      const sunday = new Date(today.setDate(monday.getDate() + 6));
+                      const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+                      const sunday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1) + 6);
                       return resultDate >= monday && resultDate <= sunday;
                     })
                     .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
