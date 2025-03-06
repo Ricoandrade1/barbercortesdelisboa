@@ -7,7 +7,8 @@ import Index from "./pages/Index";
 import BarberDashboard from "./pages/BarberDashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import LoginPage from "./pages/LoginPage";
-import AccessControlPage from "./pages/AccessControlPage"; // Import AccessControlPage
+import AccessControlPage from "./pages/AccessControlPage";
+import ProfilePage from "./pages/ProfilePage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -52,25 +53,31 @@ const App = () => {
         <Sonner />
           <div style={{ paddingTop: '40px' }}>
             <Routes>
-              <Route path="/" element={<LoginPage />} />
+              <Route path="/" element={<Index />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/index" element={<Index />} />
               <Route
                 path="/barber"
                 element={
-                  isAuthenticated ? <BarberDashboard /> : <Navigate to="/login" />
+                  isAuthenticated ? <BarberDashboard /> : <Navigate to="/login" replace />
                 }
               />
               <Route
                 path="/manager"
                 element={
-                  isAuthenticated ? <ManagerDashboard /> : <Navigate to="/login" />
+                  isAuthenticated ? <ManagerDashboard /> : <Navigate to="/login" replace />
                 }
               />
                <Route
                 path="/access-control"
                 element={
-                  isAuthenticated ? <AccessControlPage /> : <Navigate to="/login" />
+                  isAuthenticated ? <AccessControlPage /> : <Navigate to="/login" replace />
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  isAuthenticated ? <ProfilePage /> : <Navigate to="/login" replace />
                 }
               />
             </Routes>

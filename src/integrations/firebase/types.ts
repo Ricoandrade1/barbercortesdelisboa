@@ -2,6 +2,8 @@ export interface Service {
   id: string;
   name: string;
   price: number;
+  barberName: string;
+  clientName: string;
 }
 
 export interface Product {
@@ -9,6 +11,7 @@ export interface Product {
   name: string;
   basePrice: number;
   stock: number;
+  barberName: string;
 }
 
 export interface Barber {
@@ -19,6 +22,7 @@ export interface Barber {
   unit?: string;
   balance: number; // Assuming barbers have a balance
   profilePicture?: string;
+  achievements?: string[];
 }
 
 export interface ProductionResult {
@@ -26,6 +30,13 @@ export interface ProductionResult {
   barberName: string;
   serviceName: string;
   date: string; // Or Date type if you are using Date objects
+  type: 'service' | 'product';
+  revenue: number;
+  clientName: string;
+  productName?: string;
+  productId?: string;
+  quantity?: number;
+  totalPrice?: number;
 }
 
 export interface ServiceType {

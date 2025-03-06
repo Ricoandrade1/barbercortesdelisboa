@@ -171,10 +171,121 @@ export const uploadProfilePicture = async (file: File, barberEmail: string): Pro
 };
 
 // Fetches extra services from the 'extraservice' collection in Firebase
+export const getServicesCountByBarberEmail = async (email: string): Promise<number> => {
+  console.log('getServicesCountByBarberEmail chamado com email:', email);
+  const querySnapshot = await getDocs(collection(db, 'productionResults'));
+  const productionResults = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as ProductionResult[];
+  const count = productionResults.filter(result => result.barberName === email && result.serviceName !== undefined).length;
+  console.log('getServicesCountByBarberEmail retornando:', count);
+  return count;
+};
+
+export const getProductsCountByBarberEmail = async (email: string): Promise<number> => {
+  console.log('getProductsCountByBarberEmail chamado com email:', email);
+  const querySnapshot = await getDocs(collection(db, 'productionResults'));
+  const productionResults = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as ProductionResult[];
+  const count = productionResults.filter(result => result.barberName === email && result.productName !== undefined).length;
+   console.log('getProductsCountByBarberEmail retornando:', count);
+  return count;
+};
+
+export const getClientsCountByBarberEmail = async (email: string): Promise<number> => {
+  console.log('getClientsCountByBarberEmail chamado com email:', email);
+  const querySnapshot = await getDocs(collection(db, 'productionResults'));
+  const productionResults = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as ProductionResult[];
+  const uniqueClients = new Set(productionResults.filter(result => result.barberName === email && result.clientName !== "").map(result => result.clientName));
+  const count = uniqueClients.size;
+  console.log('getClientsCountByBarberEmail retornando:', count);
+  return count;
+};
+
+export const getTotalRevenueByBarberEmail = async (email: string): Promise<number> => {
+   console.log('getTotalRevenueByBarberEmail chamado com email:', email);
+  const querySnapshot = await getDocs(collection(db, 'productionResults'));
+  const productionResults = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as ProductionResult[];
+  let total = 0;
+  productionResults.filter(result => result.barberName === email).forEach(result => {
+    if (result.price) {
+      total += result.price;
+    } else if (result.totalPrice) {
+      total += result.totalPrice;
+    }
+  });
+  console.log('getTotalRevenueByBarberEmail retornando:', total);
+  return total;
+};
+
+export const getTotalRevenueByBarberEmailThisMonth = async (email: string): Promise<number> => {
+   console.log('getTotalRevenueByBarberEmailThisMonth chamado com email:', email);
+  const querySnapshot = await getDocs(collection(db, 'productionResults'));
+  const productionResults = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as ProductionResult[];
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  let total = 0;
+  productionResults.filter(result => {
+    const resultDate = new Date(result.date);
+    const resultMonth = resultDate.getMonth();
+    const resultYear = resultDate.getFullYear();
+    return result.barberName === email && resultMonth === currentMonth && resultYear === currentYear;
+  }).forEach(result => {
+    if (result.price) {
+      total += result.price;
+    } else if (result.totalPrice) {
+      total += result.totalPrice;
+    }
+  });
+  console.log('getTotalRevenueByBarberEmailThisMonth retornando:', total);
+  return total;
+};
+
 export const getExtraServices = async (): Promise<Service[]> => {
   const querySnapshot = await getDocs(collection(db, 'extraservice'));
   return querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   })) as Service[];
+};
+
+export const getBarberAchievements = async (barberEmail: string): Promise<string[]> => {
+  try {
+    const barber = await getBarberByEmail(barberEmail);
+    if (!barber) {
+      throw new Error(`Barber with email ${barberEmail} not found`);
+    }
+    return barber.achievements || [];
+  } catch (error) {
+    console.error('Error getting barber achievements: ', error);
+    return [];
+  }
+};
+
+export const updateBarberAchievements = async (barberEmail: string, achievements: string[]): Promise<void> => {
+  try {
+    const barber = await getBarberByEmail(barberEmail);
+    if (!barber) {
+      throw new Error(`Barber with email ${barberEmail} not found`);
+    }
+    const barberDocRef = doc(db, 'barbers', barber.id);
+    await updateDoc(barberDocRef, { achievements });
+    console.log('Barber achievements updated with ID: ', barber.id);
+  } catch (error) {
+    console.error('Error updating barber achievements: ', error);
+    throw error;
+  }
 };

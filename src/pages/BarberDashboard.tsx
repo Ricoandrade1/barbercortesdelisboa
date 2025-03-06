@@ -51,7 +51,6 @@ const BarberDashboard = () => {
   const [ganhosSemanaVisible, setGanhosSemanaVisible] = useState(false);
   const [produzidoMesVisible, setProduzidoMesVisible] = useState(false);
   const [totalReceberVisible, setTotalReceberVisible] = useState(false);
-  const [mesAnteriorVisible, setMesAnteriorVisible] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
@@ -60,7 +59,6 @@ const BarberDashboard = () => {
   const [selectedWeek, setSelectedWeek] = useState('');
   const [produzidoMesDate, setProduzidoMesDate] = useState<Date | undefined>(undefined);
   const [totalReceberDate, setTotalReceberDate] = useState<Date | undefined>(undefined);
-  const [mesAnteriorDate, setMesAnteriorDate] = useState<Date | undefined>(undefined);
   const [barberShops, setBarberShops] = useState([]);
   const [selectedBarberShop, setSelectedBarberShop] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
@@ -176,7 +174,7 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Ganhos Hoje
                   <Button variant="ghost" size="icon" onClick={() => setGanhosHojeVisible(!ganhosHojeVisible)}>
-                    {ganhosHojeVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                    {ganhosHojeVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="2" /><path d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="3" y1="3" x2="21" y2="21" /><path d="M10.584 10.587a2 2 0 0 0 2.828 2.83" /><path d="M16.667 16.665c-2.666 4.666 -6 7 -10 7a9.049 9.049 0 0 1 -3.255 -.77" /><path d="M22 12c-2.667 4.667 -6 7 -10 7a9.049 9.049 0 0 1 -3.255 -.77" /><path d="M2 12c2.667 -4.667 6 -7 10 -7s3.333 2.333 6 7" /></svg>}
                   </Button>
                 </h3>
                 <DatePickerCard onDateChange={(date) => setGanhosHojeDate(date)} defaultDate={ganhosHojeDate} />
@@ -215,7 +213,7 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Ganhos esta Semana
                   <Button variant="ghost" size="icon" onClick={() => setGanhosSemanaVisible(!ganhosSemanaVisible)}>
-                    {ganhosSemanaVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                    {ganhosSemanaVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 o 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
                 <WeekSelector onWeekChange={(week) => {
@@ -246,50 +244,16 @@ const BarberDashboard = () => {
               </Card>
               <Card className="p-6">
                 <h3 className="text-lg font-medium flex items-center justify-between">
-                  Produzido este Mês
-                  <Button variant="ghost" size="icon" onClick={() => setProduzidoMesVisible(!produzidoMesVisible)}>
-                    {produzidoMesVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 o 0 1 1.27.11"/></svg>}
-                  </Button>
-                </h3>
-                <MonthSelector onMonthChange={(month) => {
-                  const now = new Date();
-                  const selectedMonth = new Date(now.getFullYear(), month, 1);
-                  setProduzidoMesDate(selectedMonth);
-                }} />
-                <>
-                  <p
-                    className="text-3xl font-bold mt-2"
-                    style={{ visibility: produzidoMesVisible ? 'visible' : 'hidden' }}
-                  >
-                    €{productionResults
-                      .filter(result => {
-                        const selectedDate = produzidoMesDate || new Date();
-                        const resultDate = new Date(result.date);
-                        return resultDate.getMonth() === selectedDate.getMonth() && resultDate.getFullYear() === selectedDate.getFullYear();
-                      })
-                      .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
-                      .toFixed(2)}
-                  </p>
-                  <p
-                    className="text-3xl font-bold mt-2"
-                    style={{ visibility: produzidoMesVisible ? 'hidden' : 'visible' }}
-                  >
-                    ******
-                  </p>
-                </>
-                <p className="text-sm text-muted-foreground mt-1">Total de comissões e vendas este mês</p>
-              </Card>
-              <Card className="p-6">
-                <h3 className="text-lg font-medium flex items-center justify-between">
                   Total a Receber
                   <Button variant="ghost" size="icon" onClick={() => setTotalReceberVisible(!totalReceberVisible)}>
-                    {totalReceberVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 o 0 1 1.27.11"/></svg>}
+                    {totalReceberVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 o 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
                 <MonthSelector onMonthChange={(month) => {
                   const now = new Date();
                   const selectedMonth = new Date(now.getFullYear(), month, 1);
                   setTotalReceberDate(selectedMonth);
+                  setSelectedMonth(month.toString());
                 }} />
                 <>
                   <p
@@ -308,12 +272,7 @@ const BarberDashboard = () => {
                 <p className="text-sm text-muted-foreground mt-1">Comissões pendentes</p>
               </Card>
               <Card className="p-6">
-                <h3 className="text-lg font-medium flex items-center justify-between">
-                  Serviços Hoje
-                  <Button variant="ghost" size="icon" onClick={() => setGanhosHojeVisible(!ganhosHojeVisible)}>
-                    {ganhosHojeVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 o 0 1 1.27.11"/></svg>}
-                  </Button>
-                </h3>
+                <h3 className="text-lg font-medium">Serviços Hoje</h3>
                 <DatePickerCard onDateChange={(date) => setGanhosHojeDate(date)} defaultDate={ganhosHojeDate} />
                 <p className="text-3xl font-bold mt-2">
                   {productionResults.filter(result => {
