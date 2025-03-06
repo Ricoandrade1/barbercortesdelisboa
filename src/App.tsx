@@ -53,31 +53,31 @@ const App = () => {
         <Sonner />
           <div style={{ paddingTop: '40px' }}>
             <Routes>
-              <Route path="/" element={<Index />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/" element={isAuthenticated ? <Index /> : <Navigate to="/login" />} />
               <Route path="/index" element={<Index />} />
               <Route
                 path="/barber"
                 element={
-                  isAuthenticated ? <BarberDashboard /> : <Navigate to="/login" replace />
+                  isAuthenticated ? <BarberDashboard /> : <Navigate to="/login" />
                 }
               />
               <Route
                 path="/manager"
                 element={
-                  isAuthenticated ? <ManagerDashboard /> : <Navigate to="/login" replace />
+                  isAuthenticated ? <ManagerDashboard /> : <Navigate to="/login" />
                 }
               />
                <Route
                 path="/access-control"
                 element={
-                  isAuthenticated ? <AccessControlPage /> : <Navigate to="/login" replace />
+                  isAuthenticated ? <AccessControlPage /> : <Navigate to="/login" />
                 }
               />
               <Route
                 path="/profile"
                 element={
-                  isAuthenticated ? <ProfilePage /> : <Navigate to="/login" replace />
+                  isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />
                 }
               />
             </Routes>
