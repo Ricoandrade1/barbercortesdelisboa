@@ -36,6 +36,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { uploadProfilePicture } from "@/integrations/firebase/firebase-db";
+import DatePickerCard from "@/components/DatePickerCard";
+import WeekSelector from "@/components/WeekSelector";
+import MonthSelector from "@/components/MonthSelector";
 
 const BarberDashboard = () => {
   const [barberData, setBarberData] = useState(null);
@@ -52,12 +55,19 @@ const BarberDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
-    const [barberShops, setBarberShops] = useState([]);
-    const [selectedBarberShop, setSelectedBarberShop] = useState('');
-    
-    const getMonthName = (date: Date) => {
-        return date.toLocaleDateString('pt-BR', { month: 'long' });
-    };
+  const [ganhosHojeDate, setGanhosHojeDate] = useState<Date | undefined>(undefined);
+  const [ganhosSemanaDate, setGanhosSemanaDate] = useState<Date | undefined>(undefined);
+  const [selectedWeek, setSelectedWeek] = useState('');
+  const [produzidoMesDate, setProduzidoMesDate] = useState<Date | undefined>(undefined);
+  const [totalReceberDate, setTotalReceberDate] = useState<Date | undefined>(undefined);
+  const [mesAnteriorDate, setMesAnteriorDate] = useState<Date | undefined>(undefined);
+  const [barberShops, setBarberShops] = useState([]);
+  const [selectedBarberShop, setSelectedBarberShop] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+
+  const getMonthName = (date: Date) => {
+    return date.toLocaleDateString('pt-BR', { month: 'long' });
+  };
 
     const filterProductionResultsByMonth = (results: any[], month: number, year: number) => {
         return results.filter(result => {
@@ -166,17 +176,18 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Ganhos Hoje
                   <Button variant="ghost" size="icon" onClick={() => setGanhosHojeVisible(!ganhosHojeVisible)}>
-                    {ganhosHojeVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                    {ganhosHojeVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
+                <DatePickerCard onDateChange={(date) => setGanhosHojeDate(date)} defaultDate={ganhosHojeDate} />
                 <p className="text-3xl font-bold mt-2">
                   {ganhosHojeVisible ? `€${productionResults
                     .filter(result => {
                       const resultDate = new Date(result.date);
-                      const today = new Date();
-                      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-                      const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
-                      return resultDate >= todayStart && resultDate <= todayEnd;
+                      const selectedDate = ganhosHojeDate || new Date();
+                      const selectedDateStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0);
+                      const selectedDateEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59);
+                      return resultDate >= selectedDateStart && resultDate <= selectedDateEnd;
                     })
                     .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
                     .toFixed(2)}` : '******'}
@@ -207,16 +218,27 @@ const BarberDashboard = () => {
                     {ganhosSemanaVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
-                 <p className="text-3xl font-bold mt-2">
+                <WeekSelector onWeekChange={(week) => {
+                  const now = new Date();
+                  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                  const firstWeekDay = firstDayOfMonth.getDay();
+                  const firstWeekStartDate = new Date(now.getFullYear(), now.getMonth(), 1 - firstWeekDay + (firstWeekDay === 0 ? -6 : 1));
+                  const weekStartDate = new Date(firstWeekStartDate.getFullYear(), firstWeekStartDate.getMonth(), firstWeekStartDate.getDate() + (week - 1) * 7);
+                  setGanhosSemanaDate(weekStartDate);
+                  setSelectedWeek(week.toString());
+                }} />
+                <p className="text-3xl font-bold mt-2">
                   {ganhosSemanaVisible ? `€${productionResults
                     .filter(result => {
+                      const selectedDate = ganhosHojeDate || new Date();
+                      const firstDayOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+                      const firstWeekDay = firstDayOfMonth.getDay();
+                      const firstWeekStartDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1 - firstWeekDay + (firstWeekDay === 0 ? -6 : 1));
+                      const week = parseInt(selectedWeek);
+                      const weekStartDate = new Date(firstWeekStartDate.getFullYear(), firstWeekStartDate.getMonth(), firstWeekStartDate.getDate() + (week - 1) * 7);
+                      const weekEndDate = new Date(weekStartDate.getFullYear(), weekStartDate.getMonth(), weekStartDate.getDate() + 6);
                       const resultDate = new Date(result.date);
-                      const today = new Date();
-                      const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
-                      const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Monday is 1, Sunday is 0
-                      const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
-                      const sunday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1) + 6);
-                      return resultDate >= monday && resultDate <= sunday;
+                      return resultDate >= weekStartDate && resultDate <= weekEndDate;
                     })
                     .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
                     .toFixed(2)}` : '******'}
@@ -226,9 +248,14 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Produzido este Mês
                   <Button variant="ghost" size="icon" onClick={() => setProduzidoMesVisible(!produzidoMesVisible)}>
-                    {produzidoMesVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                    {produzidoMesVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 o 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
+                <MonthSelector onMonthChange={(month) => {
+                  const now = new Date();
+                  const selectedMonth = new Date(now.getFullYear(), month, 1);
+                  setProduzidoMesDate(selectedMonth);
+                }} />
                 <>
                   <p
                     className="text-3xl font-bold mt-2"
@@ -236,8 +263,9 @@ const BarberDashboard = () => {
                   >
                     €{productionResults
                       .filter(result => {
+                        const selectedDate = produzidoMesDate || new Date();
                         const resultDate = new Date(result.date);
-                        return resultDate.getMonth() === new Date().getMonth() && resultDate.getFullYear() === new Date().getFullYear();
+                        return resultDate.getMonth() === selectedDate.getMonth() && resultDate.getFullYear() === selectedDate.getFullYear();
                       })
                       .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
                       .toFixed(2)}
@@ -255,15 +283,20 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Total a Receber
                   <Button variant="ghost" size="icon" onClick={() => setTotalReceberVisible(!totalReceberVisible)}>
-                    {totalReceberVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                    {totalReceberVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 o 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
+                <MonthSelector onMonthChange={(month) => {
+                  const now = new Date();
+                  const selectedMonth = new Date(now.getFullYear(), month, 1);
+                  setTotalReceberDate(selectedMonth);
+                }} />
                 <>
                   <p
                     className="text-3xl font-bold mt-2"
                     style={{ visibility: totalReceberVisible ? 'visible' : 'hidden' }}
                   >
-                    €{calculateTotalEarnings(filterProductionResultsByMonth(productionResults, new Date().getMonth(), new Date().getFullYear())).toFixed(2)}
+                    €{calculateTotalEarnings(filterProductionResultsByMonth(productionResults, (totalReceberDate || new Date()).getMonth(), (totalReceberDate || new Date()).getFullYear())).toFixed(2)}
                   </p>
                   <p
                     className="text-3xl font-bold mt-2"
@@ -276,27 +309,19 @@ const BarberDashboard = () => {
               </Card>
               <Card className="p-6">
                 <h3 className="text-lg font-medium flex items-center justify-between">
-                  Mês Anterior
-                  <Button variant="ghost" size="icon" onClick={() => setMesAnteriorVisible(!mesAnteriorVisible)}>
-                    {mesAnteriorVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 0 0 1 1.27.11"/></svg>}
+                  Serviços Hoje
+                  <Button variant="ghost" size="icon" onClick={() => setGanhosHojeVisible(!ganhosHojeVisible)}>
+                    {ganhosHojeVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 0 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 o 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
-                 <p className="text-3xl font-bold mt-2">
-                    {mesAnteriorVisible ? `€${calculateTotalEarnings(filterProductionResultsByMonth(productionResults, new Date().getMonth() - 1, new Date().getFullYear())).toFixed(2)}` : '******'}
-                </p>
-                 <p className="text-sm text-muted-foreground mt-1">
-                    {mesAnteriorVisible ? getMonthName(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1)) : '******'}
-                </p>
-              </Card>
-              <Card className="p-6">
-                <h3 className="text-lg font-medium">Serviços Hoje</h3>
+                <DatePickerCard onDateChange={(date) => setGanhosHojeDate(date)} defaultDate={ganhosHojeDate} />
                 <p className="text-3xl font-bold mt-2">
                   {productionResults.filter(result => {
                       const resultDate = new Date(result.date);
-                      const today = new Date();
-                      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-                      const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
-                      return resultDate >= todayStart && resultDate <= todayEnd;
+                      const selectedDate = ganhosHojeDate || new Date();
+                      const selectedDateStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0);
+                      const selectedDateEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59);
+                      return resultDate >= selectedDateStart && resultDate <= selectedDateEnd;
                     }).length}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">+0 agendados</p>
