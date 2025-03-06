@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAuth } from 'firebase/auth';
-import { getBarberByEmail, updateBarber, getServicesCountByBarberEmail, getProductsCountByBarberEmail, getClientsCountByBarberEmail, getTotalRevenueByBarberEmail, getBarberAchievements, updateBarberAchievements, getTotalRevenueByBarberEmailThisMonth } from '@/integrations/firebase/firebase-db';
+import { getBarberByEmail, updateBarber, getServicesCountByBarberEmail, getProductsCountByBarberEmail, getClientsCountByBarberEmail, getTotalRevenueByBarberEmail, getBarberAchievements, updateBarberAchievements, getTotalRevenueByBarberEmailThisMonth, getMonthlyRevenueByBarberEmail } from '@/integrations/firebase/firebase-db';
 import { ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -16,6 +16,8 @@ const ProfilePage = () => {
   const [profilePicture, setProfilePicture] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [achievements, setAchievements] = useState<string[]>([]);
+  const [monthlyRevenue, setMonthlyRevenue] = useState<{ [month: string]: number }>({});
+  const [highestRevenueMonth, setHighestRevenueMonth] = useState<string | null>(null);
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -65,6 +67,31 @@ const ProfilePage = () => {
         const fetchedAchievements = await getBarberAchievements(user.email);
         setAchievements(fetchedAchievements);
 
+        const monthlyRevenueData = await getMonthlyRevenueByBarberEmail(user.email);
+        setMonthlyRevenue(monthlyRevenueData);
+
+        // Determine the month with the highest revenue
+        let maxRevenue = 0;
+        let maxRevenueMonth: string | null = null;
+        for (const month in monthlyRevenueData) {
+          if (monthlyRevenueData[month] > maxRevenue) {
+            maxRevenue = monthlyRevenueData[month];
+            maxRevenueMonth = month;
+          }
+        }
+        setHighestRevenueMonth(maxRevenueMonth);
+        setHighestRevenueMonth(maxRevenueMonth);
+        console.log('Faturamento do mês de maior faturamento:', maxRevenue);
+        console.log('Histórico de faturamento mensal:', monthlyRevenue);
+
+        let maxRevenueForRanking = 0;
+        if (highestRevenueMonth && monthlyRevenue[highestRevenueMonth]) {
+          maxRevenueForRanking = monthlyRevenue[highestRevenueMonth];
+        }
+        console.log('maxRevenueForRanking:', maxRevenueForRanking);
+        const rankingInfo = getRanking(maxRevenueForRanking);
+        console.log('Insígnia do usuário:', rankingInfo.name);
+
         setRanking(getRanking(totalRevenueThisMonthValue));
       }
     };
@@ -74,23 +101,25 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const updateAchievements = async () => {
-      if (user && user.email) {
+      if (user && user.email && highestRevenueMonth) {
+        let maxRevenue = 0
+        if (monthlyRevenue[highestRevenueMonth]) {
+          maxRevenue = monthlyRevenue[highestRevenueMonth]
+        }
         const newAchievements: string[] = [];
         for (const level of achievementLevels) {
-          if (totalRevenueThisMonth >= level.threshold) {
+          if (maxRevenue >= level.threshold) {
             newAchievements.push(level.name);
           }
         }
 
-        if (newAchievements.length > achievements.length) {
-          await updateBarberAchievements(user.email, newAchievements);
-          setAchievements(newAchievements);
-        }
+        await updateBarberAchievements(user.email, newAchievements);
+        setAchievements(newAchievements);
       }
     };
 
     updateAchievements();
-  }, [totalRevenueThisMonth, user, achievements]);
+  }, [highestRevenueMonth, user, monthlyRevenue]);
 
   const getRanking = (totalRevenue: number) => {
     if (totalRevenue >= 15000) {
@@ -143,11 +172,20 @@ const ProfilePage = () => {
       <div className="bg-white rounded-lg shadow-md p-4 mb-4">
         <h2 className="text-lg font-semibold mb-2">Insígnias Recolhidas</h2>
         <div className="flex flex-row gap-2 items-center justify-center">
-          {achievementLevels.map((level) => (
-            <div key={level.name} className={achievements.includes(level.name) ? "" : "grayscale"}>
-              <span className="text-2xl">{level.icon}</span>
-            </div>
-          ))}
+          {achievementLevels.map((level) => {
+            let isAchieved = false;
+            if (highestRevenueMonth && monthlyRevenue[highestRevenueMonth] >= level.threshold) {
+              isAchieved = true;
+            }
+            return (
+              <div
+                key={level.name}
+                className={`relative ${isAchieved ? '' : 'opacity-10'}`}
+              >
+                <span className="text-2xl" style={{ color: isAchieved ? 'inherit' : '#888' }}>{level.icon}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -157,7 +195,6 @@ const ProfilePage = () => {
             <th className="px-4 py-2">Faixa de Pontuação</th>
             <th className="px-4 py-2">Nome do Ranking</th>
             <th className="px-4 py-2">Ícone</th>
-            <th className="px-4 py-2">Mensagem ao Alcançar</th>
           </tr>
         </thead>
         <tbody>
@@ -165,43 +202,36 @@ const ProfilePage = () => {
             <td className="border px-4 py-2">0 a 1000</td>
             <td className="border px-4 py-2">Iniciante</td>
             <td className="border px-4 py-2">🌱 Semente</td>
-            <td className="border px-4 py-2">Toda grande jornada começa com um primeiro passo! Continue evoluindo!</td>
           </tr>
           <tr>
             <td className="border px-4 py-2">1000 a 3000</td>
             <td className="border px-4 py-2">Aprendiz</td>
             <td className="border px-4 py-2">🔧 Ferramenta</td>
-            <td className="border px-4 py-2">Os primeiros resultados estão aparecendo! Continue firme!</td>
           </tr>
           <tr>
             <td className="border px-4 py-2">3000 a 5000</td>
             <td className="border px-4 py-2">Profissional</td>
             <td className="border px-4 py-2">✂️ Tesoura Pro</td>
-            <td className="border px-4 py-2">Agora sim, já és um profissional! Vamos crescer ainda mais?</td>
           </tr>
           <tr>
             <td className="border px-4 py-2">5000 a 8000</td>
             <td className="border px-4 py-2">Mestre</td>
             <td className="border px-4 py-2">🏆 Troféu de Ouro</td>
-            <td className="border px-4 py-2">Você atingiu um novo patamar! O sucesso já está ao teu alcance!</td>
           </tr>
           <tr>
             <td className="border px-4 py-2">8000 a 10000</td>
             <td className="border px-4 py-2">Lendário</td>
             <td className="border px-4 py-2">🔥 Chama Ardente</td>
-            <td className="border px-4 py-2">O teu nome já está marcado na história do salão! Quem consegue te parar?</td>
           </tr>
           <tr>
             <td className="border px-4 py-2">10000 a 15000</td>
             <td className="border px-4 py-2">Elite</td>
             <td className="border px-4 py-2">👑 Coroa de Elite</td>
-            <td className="border px-4 py-2">Só os melhores chegam aqui! És referência no ramo!</td>
           </tr>
           <tr>
             <td className="border px-4 py-2">15000 a 20000</td>
             <td className="border px-4 py-2">Imortal</td>
             <td className="border px-4 py-2">🚀 Foguete Supremo</td>
-            <td className="border px-4 py-2">Acima de ti, só as estrelas! Um verdadeiro mestre do ofício!</td>
           </tr>
         </tbody>
       </table>

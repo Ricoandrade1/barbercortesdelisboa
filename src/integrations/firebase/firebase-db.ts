@@ -289,3 +289,35 @@ export const updateBarberAchievements = async (barberEmail: string, achievements
     throw error;
   }
 };
+
+export const getMonthlyRevenueByBarberEmail = async (email: string): Promise<{ [month: string]: number }> => {
+  const querySnapshot = await getDocs(collection(db, 'productionResults'));
+  const productionResults = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as ProductionResult[];
+
+  const filteredProductionResults = productionResults.filter(result => result.barberName === email);
+  console.log('Resultados de produção filtrados:', filteredProductionResults);
+
+  const monthlyRevenue: { [month: string]: number } = {};
+
+  productionResults.filter(result => result.barberName === email).forEach(result => {
+    const resultDate = new Date(result.date);
+    const month = `${resultDate.getFullYear()}-${String(resultDate.getMonth() + 1).padStart(2, '0')}`;
+    const revenue = result.revenue !== undefined ? result.revenue : result.totalPrice !== undefined ? result.totalPrice : result.price !== undefined ? result.price : 0;
+
+    console.log('Resultado de produção:', result);
+    console.log('Mês:', month);
+    console.log('Faturamento:', revenue);
+
+    if (monthlyRevenue[month]) {
+      monthlyRevenue[month] += revenue;
+    } else {
+      monthlyRevenue[month] = revenue;
+    }
+  });
+
+  console.log('Histórico de faturamento mensal:', monthlyRevenue);
+  return monthlyRevenue;
+};

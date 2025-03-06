@@ -57,6 +57,7 @@ const BarberDashboard = () => {
   const [ganhosHojeDate, setGanhosHojeDate] = useState<Date | undefined>(undefined);
   const [ganhosSemanaDate, setGanhosSemanaDate] = useState<Date | undefined>(undefined);
   const [selectedWeek, setSelectedWeek] = useState('');
+  const [totalProduzido, setTotalProduzido] = useState(0);
   const [produzidoMesDate, setProduzidoMesDate] = useState<Date | undefined>(undefined);
   const [totalReceberDate, setTotalReceberDate] = useState<Date | undefined>(undefined);
   const [barberShops, setBarberShops] = useState([]);
@@ -270,6 +271,41 @@ const BarberDashboard = () => {
                   </p>
                 </>
                 <p className="text-sm text-muted-foreground mt-1">Comissões pendentes</p>
+              </Card>
+              <Card className="p-6">
+                <h3 className="text-lg font-medium flex items-center justify-between">
+                  Total Produzido
+                  <Button variant="ghost" size="icon" onClick={() => setProduzidoMesVisible(!produzidoMesVisible)}>
+                    {produzidoMesVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 13.13 o 0 1 1.27.11"/></svg>}
+                  </Button>
+                </h3>
+                <MonthSelector onMonthChange={(month) => {
+                  const now = new Date();
+                  const selectedMonth = new Date(now.getFullYear(), month, 1);
+                  setProduzidoMesDate(selectedMonth);
+                  setSelectedMonth(month.toString());
+                  const total = productionResults
+                    .filter(result => {
+                      const resultDate = new Date(result.date);
+                      return resultDate.getMonth() === selectedMonth.getMonth() && resultDate.getFullYear() === selectedMonth.getFullYear();
+                    })
+                    .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
+                  setTotalProduzido(total);
+                }} />
+                <>
+                  <p
+                    className="text-3xl font-bold mt-2"
+                    style={{ visibility: produzidoMesVisible ? 'visible' : 'hidden' }}
+                  >
+                    €{totalProduzido.toFixed(2)}
+                  </p>
+                  <p
+                    className="text-3xl font-bold mt-2"
+                    style={{ visibility: produzidoMesVisible ? 'hidden' : 'visible' }}
+                  >
+                    ******
+                  </p>
+                </>
               </Card>
               <Card className="p-6">
                 <h3 className="text-lg font-medium">Serviços Hoje</h3>
