@@ -244,7 +244,7 @@ const ProfilePage = () => {
           <tr>
             <td className="border px-2 py-1">15000 a 20000</td>
             <td className="border px-2 py-1">Imortal</td>
-            <td className="border px-2 py-1">🚀 Foguete Supremo</td>
+            <td className="border px-4 py-2">🚀 Foguete Supremo</td>
           </tr>
         </tbody>
       </table>

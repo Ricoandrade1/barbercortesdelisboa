@@ -6,13 +6,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getServices, getProducts, addProductionResult, getExtraServices } from "@/integrations/firebase/firebase-db";
+import { getServices, getProducts, addProductionResult, getExtraServices, getProductionResults } from "@/integrations/firebase/firebase-db";
 import { ServiceType, Product } from "@/integrations/firebase/types";
 import { getAuth } from "firebase/auth";
 
 interface ServiceEntryProps {
-  onServiceComplete?: (service: any) => void
-  fetchData: () => void
+  onServiceComplete?: (service: any) => void;
+  fetchData: () => void;
 }
 
 const VAT_RATE = 0.23 // 23% VAT
@@ -31,18 +31,36 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
   const [key, setKey] = useState(0);
 
   useEffect(() => {
-    setKey(prevKey => prevKey + 1);
+    setKey((prevKey) => prevKey + 1);
   }, [fetchData]);
 
   useEffect(() => {
     const fetchServices = async () => {
       const servicesFromFirebase = await getServices();
+      const productionResults = await getProductionResults();
+
+      const serviceCounts: { [serviceId: string]: number } = {};
+      productionResults.forEach((result) => {
+        if (result.serviceName) {
+          const service = servicesFromFirebase.find(
+            (s) => s.name === result.serviceName
+          );
+          if (service) {
+            serviceCounts[service.id] = (serviceCounts[service.id] || 0) + 1;
+          }
+        }
+      });
+
+      const sortedServices = [...servicesFromFirebase].sort(
+        (a, b) => (serviceCounts[b.id] || 0) - (serviceCounts[a.id] || 0)
+      );
+
       if (servicesFromFirebase) {
-        setServices(servicesFromFirebase);
+        setServices(sortedServices);
       }
     };
     fetchServices();
-  }, []);
+  }, [fetchData]);
 
   useEffect(() => {
     const fetchExtraServices = async () => {
@@ -249,7 +267,10 @@ export function ServiceEntry({ onServiceComplete, fetchData }: ServiceEntryProps
         totalPrice: totalPrice,
         commission: vatAmount,
         date: new Date().toISOString(),
-        serviceName: 'Product Sale'
+        serviceName: 'Product Sale',
+        clientName: '',
+        type: "product",
+        revenue: totalPrice,
       };
 
     try {
