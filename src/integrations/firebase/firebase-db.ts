@@ -172,31 +172,26 @@ export const uploadProfilePicture = async (file: File, barberEmail: string): Pro
 
 // Fetches extra services from the 'extraservice' collection in Firebase
 export const getServicesCountByBarberEmail = async (email: string): Promise<number> => {
-  console.log('getServicesCountByBarberEmail chamado com email:', email);
   const querySnapshot = await getDocs(collection(db, 'productionResults'));
   const productionResults = querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   })) as ProductionResult[];
   const count = productionResults.filter(result => result.barberName === email && result.serviceName !== undefined).length;
-  console.log('getServicesCountByBarberEmail retornando:', count);
   return count;
 };
 
 export const getProductsCountByBarberEmail = async (email: string): Promise<number> => {
-  console.log('getProductsCountByBarberEmail chamado com email:', email);
   const querySnapshot = await getDocs(collection(db, 'productionResults'));
   const productionResults = querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   })) as ProductionResult[];
   const count = productionResults.filter(result => result.barberName === email && result.productName !== undefined).length;
-   console.log('getProductsCountByBarberEmail retornando:', count);
   return count;
 };
 
 export const getClientsCountByBarberEmail = async (email: string): Promise<number> => {
-  console.log('getClientsCountByBarberEmail chamado com email:', email);
   const querySnapshot = await getDocs(collection(db, 'productionResults'));
   const productionResults = querySnapshot.docs.map(doc => ({
     id: doc.id,
@@ -204,31 +199,29 @@ export const getClientsCountByBarberEmail = async (email: string): Promise<numbe
   })) as ProductionResult[];
   const uniqueClients = new Set(productionResults.filter(result => result.barberName === email && result.clientName !== "").map(result => result.clientName));
   const count = uniqueClients.size;
-  console.log('getClientsCountByBarberEmail retornando:', count);
   return count;
 };
 
 export const getTotalRevenueByBarberEmail = async (email: string): Promise<number> => {
-   console.log('getTotalRevenueByBarberEmail chamado com email:', email);
   const querySnapshot = await getDocs(collection(db, 'productionResults'));
   const productionResults = querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   })) as ProductionResult[];
   let total = 0;
-  productionResults.filter(result => result.barberName === email).forEach(result => {
-    if (result.price) {
-      total += result.price;
-    } else if (result.totalPrice) {
-      total += result.totalPrice;
+  productionResults.forEach(result => {
+    if (result.barberName === email) {
+      if (result.price) {
+        total += result.price;
+      } else if (result.totalPrice) {
+        total += result.totalPrice;
+      }
     }
   });
-  console.log('getTotalRevenueByBarberEmail retornando:', total);
   return total;
 };
 
 export const getTotalRevenueByBarberEmailThisMonth = async (email: string): Promise<number> => {
-   console.log('getTotalRevenueByBarberEmailThisMonth chamado com email:', email);
   const querySnapshot = await getDocs(collection(db, 'productionResults'));
   const productionResults = querySnapshot.docs.map(doc => ({
     id: doc.id,
@@ -250,7 +243,6 @@ export const getTotalRevenueByBarberEmailThisMonth = async (email: string): Prom
       total += result.totalPrice;
     }
   });
-  console.log('getTotalRevenueByBarberEmailThisMonth retornando:', total);
   return total;
 };
 
@@ -298,7 +290,6 @@ export const getMonthlyRevenueByBarberEmail = async (email: string): Promise<{ [
   })) as ProductionResult[];
 
   const filteredProductionResults = productionResults.filter(result => result.barberName === email);
-  console.log('Resultados de produção filtrados:', filteredProductionResults);
 
   const monthlyRevenue: { [month: string]: number } = {};
 
@@ -307,10 +298,6 @@ export const getMonthlyRevenueByBarberEmail = async (email: string): Promise<{ [
     const month = `${resultDate.getFullYear()}-${String(resultDate.getMonth() + 1).padStart(2, '0')}`;
     const revenue = result.revenue !== undefined ? result.revenue : result.totalPrice !== undefined ? result.totalPrice : result.price !== undefined ? result.price : 0;
 
-    console.log('Resultado de produção:', result);
-    console.log('Mês:', month);
-    console.log('Faturamento:', revenue);
-
     if (monthlyRevenue[month]) {
       monthlyRevenue[month] += revenue;
     } else {
@@ -318,6 +305,5 @@ export const getMonthlyRevenueByBarberEmail = async (email: string): Promise<{ [
     }
   });
 
-  console.log('Histórico de faturamento mensal:', monthlyRevenue);
   return monthlyRevenue;
 };

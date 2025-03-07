@@ -6,6 +6,16 @@ import { getBarberByEmail, updateBarber, getServicesCountByBarberEmail, getProdu
 import { ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 
+const calcularTempoMedioServicos = () => {
+  // Simulação do cálculo do tempo médio dos serviços
+  return "30 minutos";
+};
+
+const calcularAvaliacao = (totalRevenue: number) => {
+  const avaliacao = totalRevenue / 1000;
+  return avaliacao.toFixed(1);
+};
+
 const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [barberData, setBarberData] = useState<any>(null);
@@ -49,8 +59,9 @@ const ProfilePage = () => {
         setPhone(data?.phone || '');
         setProfilePicture(data?.profilePicture || '');
 
-        const servicesCount = await getServicesCountByBarberEmail(user.email);
-        setServicesCount(servicesCount);
+        const servicesCountValue = await getServicesCountByBarberEmail(user.email);
+        setServicesCount(servicesCountValue);
+        console.log('servicesCountValue:', servicesCountValue);
 
         const productsCount = await getProductsCountByBarberEmail(user.email);
         setProductsCount(productsCount);
@@ -60,6 +71,8 @@ const ProfilePage = () => {
 
         const totalRevenueValue = await getTotalRevenueByBarberEmail(user.email);
         setTotalRevenue(totalRevenueValue);
+        console.log('totalRevenueValue:', totalRevenueValue);
+        console.log('totalRevenue para avaliação:', totalRevenueValue);
 
         const totalRevenueThisMonthValue = await getTotalRevenueByBarberEmailThisMonth(user.email);
         setTotalRevenueThisMonth(totalRevenueThisMonthValue);
@@ -189,49 +202,49 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      <table className="table-auto w-full">
+      <table className="table-auto w-full text-sm">
         <thead>
           <tr>
-            <th className="px-4 py-2">Faixa de Pontuação</th>
-            <th className="px-4 py-2">Nome do Ranking</th>
-            <th className="px-4 py-2">Ícone</th>
+            <th className="px-2 py-1">Faixa de Pontuação</th>
+            <th className="px-2 py-1">Nome do Ranking</th>
+            <th className="px-2 py-1">Ícone</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td className="border px-4 py-2">0 a 1000</td>
-            <td className="border px-4 py-2">Iniciante</td>
-            <td className="border px-4 py-2">🌱 Semente</td>
+            <td className="border px-2 py-1">0 a 1000</td>
+            <td className="border px-2 py-1">Iniciante</td>
+            <td className="border px-2 py-1">🌱 Semente</td>
           </tr>
           <tr>
-            <td className="border px-4 py-2">1000 a 3000</td>
-            <td className="border px-4 py-2">Aprendiz</td>
-            <td className="border px-4 py-2">🔧 Ferramenta</td>
+            <td className="border px-2 py-1">1000 a 3000</td>
+            <td className="border px-2 py-1">Aprendiz</td>
+            <td className="border px-2 py-1">🔧 Ferramenta</td>
           </tr>
           <tr>
-            <td className="border px-4 py-2">3000 a 5000</td>
-            <td className="border px-4 py-2">Profissional</td>
-            <td className="border px-4 py-2">✂️ Tesoura Pro</td>
+            <td className="border px-2 py-1">3000 a 5000</td>
+            <td className="border px-2 py-1">Profissional</td>
+            <td className="border px-2 py-1">✂️ Tesoura Pro</td>
           </tr>
           <tr>
-            <td className="border px-4 py-2">5000 a 8000</td>
-            <td className="border px-4 py-2">Mestre</td>
-            <td className="border px-4 py-2">🏆 Troféu de Ouro</td>
+            <td className="border px-2 py-1">5000 a 8000</td>
+            <td className="border px-2 py-1">Mestre</td>
+            <td className="border px-2 py-1">🏆 Troféu de Ouro</td>
           </tr>
           <tr>
-            <td className="border px-4 py-2">8000 a 10000</td>
-            <td className="border px-4 py-2">Lendário</td>
-            <td className="border px-4 py-2">🔥 Chama Ardente</td>
+            <td className="border px-2 py-1">8000 a 10000</td>
+            <td className="border px-2 py-1">Lendário</td>
+            <td className="border px-2 py-1">🔥 Chama Ardente</td>
           </tr>
           <tr>
-            <td className="border px-4 py-2">10000 a 15000</td>
-            <td className="border px-4 py-2">Elite</td>
-            <td className="border px-4 py-2">👑 Coroa de Elite</td>
+            <td className="border px-2 py-1">10000 a 15000</td>
+            <td className="border px-2 py-1">Elite</td>
+            <td className="border px-2 py-1">👑 Coroa de Elite</td>
           </tr>
           <tr>
-            <td className="border px-4 py-2">15000 a 20000</td>
-            <td className="border px-4 py-2">Imortal</td>
-            <td className="border px-4 py-2">🚀 Foguete Supremo</td>
+            <td className="border px-2 py-1">15000 a 20000</td>
+            <td className="border px-2 py-1">Imortal</td>
+            <td className="border px-2 py-1">🚀 Foguete Supremo</td>
           </tr>
         </tbody>
       </table>
@@ -333,6 +346,10 @@ const ProfilePage = () => {
                   <p className="text-lg font-semibold">Total faturado:</p>
                   <p className="text-2xl">{totalRevenue.toFixed(2)}</p>
                 </Card>
+                <Card className="p-4 mb-4">
+                  <p className="text-lg font-semibold">Tempo médio dos serviços:</p>
+                  <p className="text-2xl">{calcularTempoMedioServicos()}</p>
+                </Card>
               </div>
               <Card className="p-4">
                 <p className="text-2xl">{ranking.name} {ranking.icon}</p>
@@ -345,8 +362,28 @@ const ProfilePage = () => {
                   {ranking.name === 'Elite' && "Só os melhores chegam aqui! És referência no ramo!"}
                   {ranking.name === 'Imortal' && "Acima de ti, só as estrelas! Um verdadeiro mestre do ofício!"}
                 </p>
-              </Card>
-              
+                  {ranking.name !== 'Imortal' && (
+                    <div className="w-full">
+                      <div className="bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                        <div className="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500" style={{ width: `${(Math.min(totalRevenueThisMonth, achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold || achievementLevels.find(level => level.name === 'Imortal')?.threshold) / (achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold || achievementLevels.find(level => level.name === 'Imortal')?.threshold)) * 100}%` }}></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>0</span>
+                         {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 1000 && <span>500</span>}
+                         {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 3000 && <span>500</span>}
+                         {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 3000 && <span>1000</span>}
+                         {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 3000 && <span>1500</span>}
+                         {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 3000 && <span>2000</span>}
+                         {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 3000 && <span>2500</span>}
+                        {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 5000 && <span>500</span>}
+                        {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 8000 && <span>500</span>}
+                         {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 10000 && <span>500</span>}
+                          {achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold === 15000 && <span>500</span>}
+                        <span>{achievementLevels[achievementLevels.findIndex(level => level.name === ranking.name) + 1]?.threshold || achievementLevels.find(level => level.name === 'Imortal')?.threshold}</span>
+                      </div>
+                    </div>
+                  )}
+                </Card>
             </Card>
           </div>
         </div>

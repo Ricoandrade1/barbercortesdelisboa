@@ -37,6 +37,7 @@ export interface ProductionResult {
   productId?: string;
   quantity?: number;
   totalPrice?: number;
+  price?: number;
 }
 
 export interface ServiceType {
