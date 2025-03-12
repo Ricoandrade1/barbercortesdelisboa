@@ -2,19 +2,28 @@ import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface MonthSelectorProps {
-  onMonthChange: (month: number) => void;
+  onMonthChange: (month: string) => void;
 }
 
 const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) => {
   const [selectedMonth, setSelectedMonth] = useState('');
 
-  const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  const monthNames = ["Todos os meses", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-  const handleMonthChange = (month: string) => {
-    setSelectedMonth(month);
-    onMonthChange(parseInt(month));
+  const handleMonthChange = (monthIndex: string) => {
+    if (monthIndex === '0') {
+      setSelectedMonth('');
+      onMonthChange('');
+    } else {
+      const month = parseInt(monthIndex) ;
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const formattedMonth = `${year}-${(month).toString().padStart(2, '0')}`;
+      setSelectedMonth(formattedMonth);
+      onMonthChange(formattedMonth);
+    }
   };
 
   return (
@@ -22,7 +31,7 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) => {
       <SelectTrigger>
         <SelectValue placeholder="Selecionar Mês" />
       </SelectTrigger>
-      <SelectContent>
+     <SelectContent>
         {monthNames.map((month, index) => (
           <SelectItem key={index} value={index.toString()}>
             {month}

@@ -9,6 +9,7 @@ import ManagerDashboard from "./pages/ManagerDashboard";
 import LoginPage from "./pages/LoginPage";
 import AccessControlPage from "./pages/AccessControlPage";
 import ProfilePage from "./pages/ProfilePage";
+import MindMapSystem from "./components/MindMapSystem";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -78,6 +79,12 @@ const App = () => {
                 path="/profile"
                 element={
                   isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />
+                }
+              />
+               <Route
+                path="/mindmap"
+                element={
+                  isAuthenticated ? <MindMapSystem /> : <Navigate to="/login" />
                 }
               />
             </Routes>

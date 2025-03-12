@@ -71,6 +71,20 @@ const Index = () => {
           </Link>
           <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
             <div className="space-y-4">
+              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M17.66 4.58a5 5 0 0 1 0 7.07M6.34 4.58a5 5 0 0 0 0 7.07m11.32 9.92a5 5 0 0 0 0-7.07M6.34 19.42a5 5 0 0 1 0-7.07"/></svg>
+              </div>
+              <h2 className="text-2xl font-semibold">Mapa Mind</h2>
+              <p className="text-muted-foreground">
+                Organiza as tuas ideias de forma visual e estratégica
+              </p>
+                <Button className="w-full" variant="outline" onClick={() => navigate("/mindmap")}>
+                  Acessar
+                </Button>
+              </div>
+            </Card>
+          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="space-y-4">
               <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
               </div>
