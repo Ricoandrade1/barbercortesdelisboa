@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface MonthSelectorProps {
-  onMonthChange: (month: string) => void;
+  onMonthChange: (month: string | number) => void;
 }
 
 const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) => {
@@ -12,18 +12,16 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) => {
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-  const handleMonthChange = (monthIndex: string) => {
+ const handleMonthChange = (monthIndex: string) => {
     if (monthIndex === '0') {
       setSelectedMonth('');
-      onMonthChange('');
+      onMonthChange('Todos');
     } else {
-      const month = parseInt(monthIndex) ;
-      const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const formattedMonth = `${year}-${(month).toString().padStart(2, '0')}`;
-      setSelectedMonth(formattedMonth);
-      onMonthChange(formattedMonth);
+      const month = parseInt(monthIndex) - 1;
+      setSelectedMonth(month.toString());
+      onMonthChange(month);
     }
+     console.log('Mês selecionado:', monthIndex);
   };
 
   return (

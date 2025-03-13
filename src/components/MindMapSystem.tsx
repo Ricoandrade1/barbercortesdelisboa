@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Plus, X, Save, Trash, ZoomIn, ZoomOut, Move, Share, Grid, List, PanelLeft, Palette, Home } from 'lucide-react';
+import { useIsMobile } from "../hooks/use-mobile"
 
 interface MindMapNode {
   id: number;
@@ -12,12 +13,13 @@ interface MindMapNode {
 
 // Componente principal do mapa mental
 const MindMapSystem = () => {
+  const isMobile = useIsMobile();
   const [isFullScreen, setIsFullScreen] = useState(false);
   const mapContainerRef = useRef(null);
   const centerRef = useRef({ x: 0, y: 0 });
   const nextNodeId = useRef(2);
   const [nodes, setNodes] = useState<MindMapNode[]>([
-    { id: 1, title: 'Projeto Principal', x: 500, y: 900, parentId: null }
+    { id: 1, title: 'Projeto Principal', x: 500, y: isMobile ? 700 : 900, parentId: null }
   ]);
   const [connections, setConnections] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -57,9 +59,8 @@ const MindMapSystem = () => {
     } else {
       color = parentNode.color;
     }
-
     let newX = 800;
-    let newY = 900;
+    let newY = isMobile ? 700 : 900;
     if (parentId !== 1) {
       newX = parentNode.x + 300;
       newY = parentNode.y;
@@ -432,7 +433,7 @@ const MindMapSystem = () => {
                   x1={sourceX}
                   y1={sourceY}
                   x2={targetX}
-                  y2={targetY}
+                  y2={target.y + 20}
                   stroke={target.color || '#6366F1'}
                   strokeWidth={1.5}
                 />
@@ -648,19 +649,29 @@ const MindMapSystem = () => {
                 ></div>
 
                 {/* Renderiza as conexões */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="-2500 -2500 5000 5000">
                   {connections.map(conn => {
                     const source = nodes.find(node => node.id === conn.sourceId);
                     const target = nodes.find(node => node.id === conn.targetId);
                     if (!source || !target) return null;
 
+                    const sourceX = Number(source.x) + 60;
+                    const sourceY = Number(source.y) + 20;
+                    const targetX = Number(target.x) + 60;
+                    const targetY = Number(target.y) + 20;
+
+                    if (isNaN(sourceX) || isNaN(sourceY) || isNaN(targetX) || isNaN(targetY)) {
+                      console.error("Coordenadas inválidas para a conexão:", conn);
+                      return null;
+                    }
+
                     return (
                       <line
                         key={conn.id}
-                        x1={source.x + 60}
-                        y1={source.y + 20}
-                        x2={target.x + 60}
-                        y2={target.y + 20}
+                        x1={sourceX}
+                        y1={sourceY}
+                        x2={targetX}
+                        y2={targetY}
                         stroke={target.color || '#6366F1'}
                         strokeWidth={2}
                       />
