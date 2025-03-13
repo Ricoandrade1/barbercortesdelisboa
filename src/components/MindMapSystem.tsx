@@ -1,6 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, X, Save, Trash, ZoomIn, ZoomOut, Move, Share, Grid, List, PanelLeft, Palette, Home } from 'lucide-react';
-import { useIsMobile } from "../hooks/use-mobile"
+import { useNavigate } from 'react-router-dom';
+import { Plus, X, Save, Trash, ZoomIn, ZoomOut, Move, Share, Grid, List, PanelLeft, Palette, Home, Pencil } from 'lucide-react';
+import { useIsMobile } from "../hooks/use-mobile";
+import { getAuth } from 'firebase/auth';
+import { getFirestore, collection, getDocs, query, where, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/integrations/firebase/firebase-db';
+import { deleteMindMap, updateMindMap } from '@/integrations/firebase/firebase-db';
 
 interface MindMapNode {
   id: number;
@@ -14,16 +19,43 @@ interface MindMapNode {
 // Componente principal do mapa mental
 const MindMapSystem = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [mapTitle, setMapTitle] = useState(localStorage.getItem('mapTitle') || 'Mapa Mental do Projeto');
   const mapContainerRef = useRef(null);
   const centerRef = useRef({ x: 0, y: 0 });
   const nextNodeId = useRef(2);
+  const [mindMaps, setMindMaps] = useState([]);
   const [nodes, setNodes] = useState<MindMapNode[]>([
-    { id: 1, title: 'Projeto Principal', x: 500, y: isMobile ? 700 : 900, parentId: null }
+    { id: 1, title: 'Projeto Principal', x: isMobile ? 300 : 500, y: isMobile ? 500 : 900, parentId: null }
   ]);
   const [connections, setConnections] = useState([]);
+  const [editingMapId, setEditingMapId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
+  const editInputRef = useRef(null);
+
+  const fetchMindMaps = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const userId = user.uid;
+      console.log('userId:', userId);
+      const mindMapCollection = collection(db, 'mapamind');
+      const q = query(mindMapCollection, where('userId', '==', userId));
+      const querySnapshot = await getDocs(q);
+      console.log('querySnapshot:', querySnapshot);
+      const mindMapsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log('mindMapsData:', mindMapsData);
+      setMindMaps(mindMapsData);
+    }
+  };
+
+  useEffect(() => {
+    fetchMindMaps();
+  }, []);
   const [selectedNode, setSelectedNode] = useState(null);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(isMobile ? 0.7 : 1);
   const [isDragging, setIsDragging] = useState(false);
   const [isMoveButtonActive, setIsMoveButtonActive] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -39,6 +71,7 @@ const MindMapSystem = () => {
   // Função para fechar o mapa mental
   const closeFullScreen = () => {
     setIsFullScreen(false);
+    setEditingMapId(null);
   };
 
   // Adicionar um novo nó filho
@@ -88,6 +121,7 @@ const MindMapSystem = () => {
 
   // Atualizar o título de um nó
   const updateNodeTitle = (nodeId, newTitle) => {
+    console.log('updateNodeTitle chamado com nodeId:', nodeId, 'e newTitle:', newTitle);
     setNodes(nodes.map(node => 
       node.id === nodeId ? { ...node, title: newTitle } : node
     ));
@@ -197,15 +231,34 @@ const MindMapSystem = () => {
   };
 
   // Salvar o mapa
-  const saveMap = () => {
-    const mapData = {
-      nodes,
-      connections,
-      nextNodeId: nextNodeId.current
-    };
-    
-    localStorage.setItem('mindMap', JSON.stringify(mapData));
-    alert('Mapa salvo com sucesso!');
+  const saveMap = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const userId = user.uid;
+      const mapData = {
+        nodes,
+        connections,
+        nextNodeId: nextNodeId.current
+      };
+
+      // Salva o mapa mental no Firebase
+      try {
+        const { addMindMap } = await import('@/integrations/firebase/firebase-db');
+        console.log('addMindMap:', addMindMap);
+        await addMindMap(mapData, userId);
+        localStorage.setItem('mindMap', JSON.stringify(mapData));
+        alert('Mapa salvo com sucesso no Firebase!');
+        // Atualiza a lista de mapas mentais
+        fetchMindMaps();
+      } catch (error) {
+        console.error('Erro ao salvar o mapa mental no Firebase:', error);
+        alert('Erro ao salvar o mapa mental no Firebase!');
+      }
+    } else {
+      alert('Usuário não autenticado!');
+    }
   };
 
   // Funções para compartilhar
@@ -447,12 +500,17 @@ const MindMapSystem = () => {
 
   // Componente Card que será clicado para abrir o mapa mental
   const MindMapCard = () => {
+    console.log('MindMapCard renderizado');
     return (
       <div 
         className="bg-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
-        onClick={openFullScreen}
+        onClick={() => {
+          if (!editingMapId) {
+            openFullScreen();
+          }
+        }}
       >
-        <h3 className="text-lg font-semibold mb-2">Mapa Mental do Projeto</h3>
+        <h1 className="text-lg font-semibold mb-2">{mapTitle}</h1>
         <p className="text-gray-600">Clique para abrir o editor de mapa mental</p>
         <div className="mt-4 flex justify-center">
           <svg width="100" height="60" viewBox="0 0 100 60">
@@ -467,6 +525,90 @@ const MindMapSystem = () => {
             <line x1="50" y1="30" x2="70" y2="50" strokeWidth="2" />
           </svg>
         </div>
+        {mindMaps.length > 0 ? (
+          <ul>
+            {mindMaps.map(map => (
+              <li key={map.id} className="flex items-center justify-between">
+                {editingMapId === map.id ? (
+                  <input
+                    type="text"
+                    key={map.id}
+                    className="text-lg font-semibold bg-transparent border-none focus:outline-none focus:border-b-2 focus:border-indigo-500"
+                    value={editingTitle}
+                    onChange={(e) => {
+                      console.log('editingTitle:', e.target.value);
+                      setEditingTitle(e.target.value);
+                    }}
+                    onBlur={async () => {
+                      try {
+                        console.log('editingTitle onBlur:', editingTitle);
+                        await updateMindMap(map.id, { title: editingTitle });
+                        setEditingMapId(null);
+                        fetchMindMaps();
+                      } catch (error) {
+                        console.error('Erro ao atualizar o mapa mental:', error);
+                        alert('Erro ao atualizar o mapa mental!');
+                      }
+                    }}
+                    ref={editInputRef}
+                  />
+                ) : (
+                  <span
+                    onClick={() => {
+                      setEditingMapId(map.id);
+                      setEditingTitle(map.title);
+                      // Focus on the input after setting editingMapId
+                      setTimeout(() => {
+                        editInputRef.current && (editInputRef.current as HTMLInputElement).focus();
+                      }, 0);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {map.title || 'Sem título'}
+                  </span>
+                )}
+                <div className="flex items-center">
+                  <button
+                    className="p-1 rounded-full hover:bg-gray-200 text-gray-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingMapId(map.id);
+                    }}
+                  >
+                    <Pencil size={12} />
+                  </button>
+                  <button
+                    className="p-1 rounded-full hover:bg-red-100 text-red-600"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        await deleteMindMap(map.id);
+                        fetchMindMaps();
+                      } catch (error) {
+                        console.error('Erro ao excluir o mapa mental:', error);
+                        alert('Erro ao excluir o mapa mental!');
+                      }
+                    }}
+                  >
+                    <Trash size={12} />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>Nenhum mapa mental salvo.</p>
+        )}
+        <button
+          className="p-2 rounded hover:bg-gray-200"
+          onClick={() => {
+            navigate('/');
+          }}
+          title="Voltar"
+          style={{ zIndex: 10 }}
+        >
+          Voltar
+        </button>
       </div>
     );
   };
@@ -479,10 +621,38 @@ const MindMapSystem = () => {
       ) : (
         <div className="fixed inset-0 bg-white z-50 overflow-hidden">
           {/* Barra de ferramentas */}
-          <div className="bg-gray-100 p-2 shadow-md flex items-center justify-between flex-wrap">
-            <div className="flex items-center space-x-2 flex-wrap">
+          <div className={`bg-gray-100 p-2 shadow-md flex flex-col justify-between ${isMobile ? 'mobile-toolbar' : ''}`} style={{ minHeight: '100vh' }}>
+            {/* Título */}
+            {editingMapId ? (
+              <input
+                type="text"
+                className="text-xl font-bold text-center bg-transparent border-none focus:outline-none focus:border-b-2 focus:border-indigo-500"
+                value={editingTitle}
+                onChange={(e) => {
+                  console.log('editingTitle:', e.target.value);
+                  setEditingTitle(e.target.value);
+                }}
+                onBlur={async () => {
+                  try {
+                    console.log('editingTitle onBlur:', editingTitle);
+                    await updateMindMap(editingMapId, { title: editingTitle });
+                    setMapTitle(editingTitle);
+                    setEditingMapId(null);
+                    fetchMindMaps();
+                  } catch (error) {
+                    console.error('Erro ao atualizar o mapa mental:', error);
+                    alert('Erro ao atualizar o mapa mental!');
+                  }
+                }}
+              />
+            ) : (
+              <h1 className="text-xl font-bold text-center">{mapTitle}</h1>
+            )}
+
+            {/* Área de botões */}
+            <div className="flex items-center space-x-2 flex-wrap justify-center" style={{ marginTop: 'auto' }}>
               {/* Ferramentas de visualização */}
-              <button 
+              <button
                 className={`p-2 rounded ${viewMode === 'mind-map' ? 'bg-indigo-200' : 'hover:bg-gray-200'}`}
                 onClick={() => {
                   console.log('changeViewMode(mind-map) clicked');
@@ -493,7 +663,7 @@ const MindMapSystem = () => {
               >
                 <PanelLeft size={20} />
               </button>
-              <button 
+              <button
                 className={`p-2 rounded ${viewMode === 'logical' ? 'bg-indigo-200' : 'hover:bg-gray-200'}`}
                 onClick={() => {
                   console.log('changeViewMode(logical) clicked');
@@ -504,7 +674,7 @@ const MindMapSystem = () => {
               >
                 <List size={20} />
               </button>
-              <button 
+              <button
                 className={`p-2 rounded ${viewMode === 'grid' ? 'bg-indigo-200' : 'hover:bg-gray-200'}`}
                 onClick={() => {
                   console.log('changeViewMode(grid) clicked');
@@ -515,12 +685,10 @@ const MindMapSystem = () => {
               >
                 <Grid size={20} />
               </button>
-              
-              <div className="h-6 border-l border-gray-300 mx-1"></div>
-              
+
               {/* Ferramentas de navegação */}
-              <button 
-                className="p-2 rounded hover:bg-gray-200" 
+              <button
+                className="p-2 rounded hover:bg-gray-200"
                 onClick={() => {
                   console.log('zoomIn clicked');
                   zoomIn();
@@ -530,8 +698,8 @@ const MindMapSystem = () => {
               >
                 <ZoomIn size={20} />
               </button>
-              <button 
-                className="p-2 rounded hover:bg-gray-200" 
+              <button
+                className="p-2 rounded hover:bg-gray-200"
                 onClick={() => {
                   console.log('zoomOut clicked');
                   zoomOut();
@@ -541,26 +709,21 @@ const MindMapSystem = () => {
               >
                 <ZoomOut size={20} />
               </button>
-              <button 
+              <button
                 className={`p-2 rounded ${isMoveButtonActive ? 'bg-indigo-200' : 'hover:bg-gray-200'}`}
                 onClick={() => {
                   console.log('moveMap clicked');
                   setIsMoveButtonActive(!isMoveButtonActive);
                   setIsDragging(!isDragging);
                 }}
-                title="Mover Mapa (ou arraste com o mouse)"
                 style={{ zIndex: 10 }}
               >
                 <Move size={20} />
               </button>
-            </div>
-            
-            <h2 className="text-xl font-bold">Mapa Mental do Projeto</h2>
-            
-            <div className="flex items-center space-x-2 flex-wrap">
+
               {/* Ferramentas adicionais */}
-              <button 
-                className="p-2 rounded hover:bg-gray-200" 
+              <button
+                className="p-2 rounded hover:bg-gray-200"
                 onClick={() => {
                   console.log('shareMap clicked');
                   shareMap();
@@ -570,8 +733,8 @@ const MindMapSystem = () => {
               >
                 <Share size={20} />
               </button>
-              <button 
-                className="p-2 rounded hover:bg-gray-200" 
+              <button
+                className="p-2 rounded hover:bg-gray-200"
                 onClick={() => {
                   console.log('changeStyle clicked');
                   changeStyle();
@@ -581,8 +744,8 @@ const MindMapSystem = () => {
               >
                 <Palette size={20} />
               </button>
-              <button 
-                className="p-2 rounded hover:bg-gray-200" 
+              <button
+                className="p-2 rounded hover:bg-gray-200"
                 onClick={() => {
                   console.log('navigateToMaps clicked');
                   navigateToMaps();
@@ -592,8 +755,8 @@ const MindMapSystem = () => {
               >
                 <Home size={20} />
               </button>
-              <button 
-                className="p-2 rounded hover:bg-gray-200" 
+              <button
+                className="p-2 rounded hover:bg-gray-200"
                 onClick={() => {
                   console.log('saveMap clicked');
                   saveMap();
@@ -603,8 +766,8 @@ const MindMapSystem = () => {
               >
                 <Save size={20} />
               </button>
-              <button 
-                className="p-2 rounded hover:bg-gray-200" 
+              <button
+                className="p-2 rounded hover:bg-gray-200"
                 onClick={() => {
                   console.log('closeFullScreen clicked');
                   closeFullScreen();
@@ -616,7 +779,7 @@ const MindMapSystem = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Área do mapa mental */}
           <div 
             className="h-full w-full bg-gray-50 overflow-visible"
@@ -644,7 +807,6 @@ const MindMapSystem = () => {
                     height: '10000px',
                     left: '-5000px',
                     top: '-5000px',
-                    zIndex: -1
                   }}
                 ></div>
 

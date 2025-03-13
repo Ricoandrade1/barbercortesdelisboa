@@ -371,9 +371,9 @@ export const getMonthlyRevenueByBarberEmail = async (email: string): Promise<{ [
 };
 
 // MindMaps
-export const addMindMap = async (mindMap: Omit<any, 'id'>) => {
+export const addMindMap = async (mindMap: Omit<any, 'id'>, userId: string) => {
   try {
-    const docRef = await addDoc(collection(db, 'mapamind'), mindMap);
+    const docRef = await addDoc(collection(db, 'mapamind'), { ...mindMap, userId });
     console.log('MindMap written with ID: ', docRef.id);
     return docRef.id;
   } catch (e) {
