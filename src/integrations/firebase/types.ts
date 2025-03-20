@@ -38,7 +38,6 @@ export interface ProductionResult {
   quantity?: number;
   totalPrice?: number;
   price?: number;
-  serviceTime?: number;
 }
 
 export interface ServiceType {

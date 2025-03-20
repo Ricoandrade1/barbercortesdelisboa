@@ -1,27 +1,3 @@
 .grayscale {
   filter: grayscale(100%);
 }
-
-.mobile-toolbar {
-  padding: 0.5rem !important;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column !important;
-  justify-content: space-between;
-}
-
-.mobile-toolbar .flex {
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center;
-}
-
-.mobile-toolbar h2 {
-  font-size: 1.2rem !important;
-  margin-bottom: 0.5rem !important;
-}
-
-.mobile-toolbar button {
-  padding: 0.25rem !important;
-  font-size: 0.8rem !important;
-}

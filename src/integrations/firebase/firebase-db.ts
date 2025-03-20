@@ -171,87 +171,77 @@ export const uploadProfilePicture = async (file: File, barberEmail: string): Pro
 };
 
 // Fetches extra services from the 'extraservice' collection in Firebase
-export const getServicesCountByBarberEmail = async (email: string, month?: string): Promise<number> => {
+export const getServicesCountByBarberEmail = async (email: string): Promise<number> => {
   const querySnapshot = await getDocs(collection(db, 'productionResults'));
-  let productionResults = querySnapshot.docs.map(doc => ({
+  const productionResults = querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   })) as ProductionResult[];
-
-  if (month) {
-    productionResults = productionResults.filter(result => {
-      const resultDate = new Date(result.date);
-      const resultMonth = `${resultDate.getFullYear()}-${String(resultDate.getMonth() + 1).padStart(2, '0')}`;
-      return result.barberName === email && result.serviceName !== undefined && resultMonth === month;
-    });
-  } else {
-    productionResults = productionResults.filter(result => result.barberName === email && result.serviceName !== undefined);
-  }
-  return productionResults.length;
+  const count = productionResults.filter(result => result.barberName === email && result.serviceName !== undefined).length;
+  return count;
 };
 
-export const getProductsCountByBarberEmail = async (email: string, month?: string): Promise<number> => {
+export const getProductsCountByBarberEmail = async (email: string): Promise<number> => {
   const querySnapshot = await getDocs(collection(db, 'productionResults'));
-  let productionResults = querySnapshot.docs.map(doc => ({
+  const productionResults = querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   })) as ProductionResult[];
-
-  if (month) {
-    productionResults = productionResults.filter(result => {
-      const resultDate = new Date(result.date);
-      const resultMonth = `${resultDate.getFullYear()}-${String(resultDate.getMonth() + 1).padStart(2, '0')}`;
-      return result.barberName === email && result.productName !== undefined && resultMonth === month;
-    });
-  } else {
-    productionResults = productionResults.filter(result => result.barberName === email && result.productName !== undefined);
-  }
-  return productionResults.length;
+  const count = productionResults.filter(result => result.barberName === email && result.productName !== undefined).length;
+  return count;
 };
 
-export const getClientsCountByBarberEmail = async (email: string, month?: string): Promise<number> => {
+export const getClientsCountByBarberEmail = async (email: string): Promise<number> => {
   const querySnapshot = await getDocs(collection(db, 'productionResults'));
-  let productionResults = querySnapshot.docs.map(doc => ({
+  const productionResults = querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   })) as ProductionResult[];
-
-  if (month) {
-    productionResults = productionResults.filter(result => {
-      const resultDate = new Date(result.date);
-      const resultMonth = `${resultDate.getFullYear()}-${String(resultDate.getMonth() + 1).padStart(2, '0')}`;
-      return result.barberName === email && result.clientName !== "" && resultMonth === month;
-    });
-  } else {
-    productionResults = productionResults.filter(result => result.barberName === email && result.clientName !== "");
-  }
-  const uniqueClients = new Set(productionResults.map(result => result.clientName));
+  const uniqueClients = new Set(productionResults.filter(result => result.barberName === email && result.clientName !== "").map(result => result.clientName));
   const count = uniqueClients.size;
   return count;
 };
 
-export const getTotalRevenueByBarberEmail = async (email: string, month?: string): Promise<number> => {
+export const getTotalRevenueByBarberEmail = async (email: string): Promise<number> => {
   const querySnapshot = await getDocs(collection(db, 'productionResults'));
-  let productionResults = querySnapshot.docs.map(doc => ({
+  const productionResults = querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   })) as ProductionResult[];
-
-  if (month) {
-    productionResults = productionResults.filter(result => {
-      const resultDate = new Date(result.date);
-      const resultMonth = `${resultDate.getFullYear()}-${String(resultDate.getMonth() + 1).padStart(2, '0')}`;
-      return result.barberName === email && resultMonth === month;
-    });
-  } else {
-    productionResults = productionResults.filter(result => result.barberName === email);
-  }
-
   let total = 0;
   productionResults.forEach(result => {
-    const price = typeof result.price === 'number' ? result.price : 0;
-    const totalPrice = typeof result.totalPrice === 'number' ? result.totalPrice : 0;
-    total += price + totalPrice;
+    if (result.barberName === email) {
+      if (result.price) {
+        total += result.price;
+      } else if (result.totalPrice) {
+        total += result.totalPrice;
+      }
+    }
+  });
+  return total;
+};
+
+export const getTotalRevenueByBarberEmailThisMonth = async (email: string): Promise<number> => {
+  const querySnapshot = await getDocs(collection(db, 'productionResults'));
+  const productionResults = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as ProductionResult[];
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  let total = 0;
+  productionResults.filter(result => {
+    const resultDate = new Date(result.date);
+    const resultMonth = resultDate.getMonth();
+    const resultYear = resultDate.getFullYear();
+    return result.barberName === email && resultMonth === currentMonth && resultYear === currentYear;
+  }).forEach(result => {
+    if (result.price) {
+      total += result.price;
+    } else if (result.totalPrice) {
+      total += result.totalPrice;
+    }
   });
   return total;
 };
@@ -285,51 +275,11 @@ export const updateBarberAchievements = async (barberEmail: string, achievements
     }
     const barberDocRef = doc(db, 'barbers', barber.id);
     await updateDoc(barberDocRef, { achievements });
-    console.log('Barber achievements updated with ID: ', barber.id, achievements);
+    console.log('Barber achievements updated with ID: ', barber.id);
   } catch (error) {
     console.error('Error updating barber achievements: ', error);
     throw error;
   }
-};
-
-export const getAverageServiceTimeByBarberEmail = async (email: string, month?: string): Promise<number> => {
-  const querySnapshot = await getDocs(collection(db, 'productionResults'));
-  let productionResults = querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  })) as ProductionResult[];
-
-  if (month) {
-    productionResults = productionResults.filter(result => {
-      const resultDate = new Date(result.date);
-      const resultMonth = `${resultDate.getFullYear()}-${String(resultDate.getMonth() + 1).padStart(2, '0')}`;
-      return result.barberName === email && result.serviceName !== undefined && resultMonth === month;
-    });
-  } else {
-    productionResults = productionResults.filter(result => result.barberName === email && result.serviceName !== undefined);
-  }
-
-  if (productionResults.length < 2) {
-    return 30; // Need at least two services to calculate an average time
-  }
-
-  // Sort services by date
-  productionResults.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  let totalTimeDifference = 0;
-  for (let i = 1; i < productionResults.length; i++) {
-    const previousServiceTime = new Date(productionResults[i - 1].date).getTime();
-    const currentServiceTime = new Date(productionResults[i].date).getTime();
-    let timeDifference = (currentServiceTime - previousServiceTime) / (60 * 1000); // Minutes
-
-    // Adjust the time difference to be within 15 and 60 minutes
-    timeDifference = Math.max(15, Math.min(timeDifference, 60));
-
-    totalTimeDifference += timeDifference;
-  }
-
-  const averageTimeBetweenServices = totalTimeDifference / (productionResults.length - 1);
-  return averageTimeBetweenServices;
 };
 
 export const getMonthlyRevenueByBarberEmail = async (email: string): Promise<{ [month: string]: number }> => {
@@ -343,22 +293,10 @@ export const getMonthlyRevenueByBarberEmail = async (email: string): Promise<{ [
 
   const monthlyRevenue: { [month: string]: number } = {};
 
-  productionResults.filter(result => result.barberName && result.barberName === email).forEach(result => {
+  productionResults.filter(result => result.barberName === email).forEach(result => {
     const resultDate = new Date(result.date);
     const month = `${resultDate.getFullYear()}-${String(resultDate.getMonth() + 1).padStart(2, '0')}`;
-    let revenue = 0;
-    console.log('result.revenue:', result.revenue);
-    console.log('result.totalPrice:', result.totalPrice);
-    console.log('result.price:', result.price);
-    if (result.revenue !== undefined && typeof result.revenue === 'number') {
-      revenue += result.revenue;
-    }
-    if (result.totalPrice !== undefined && typeof result.totalPrice === 'number') {
-      revenue += result.totalPrice;
-    }
-    if (result.price !== undefined && typeof result.price === 'number') {
-      revenue += result.price;
-    }
+    const revenue = result.revenue !== undefined ? result.revenue : result.totalPrice !== undefined ? result.totalPrice : result.price !== undefined ? result.price : 0;
 
     if (monthlyRevenue[month]) {
       monthlyRevenue[month] += revenue;
@@ -367,46 +305,5 @@ export const getMonthlyRevenueByBarberEmail = async (email: string): Promise<{ [
     }
   });
 
-  return monthlyRevenue || {};
-};
-
-// MindMaps
-export const addMindMap = async (mindMap: Omit<any, 'id'>, userId: string) => {
-  try {
-    const docRef = await addDoc(collection(db, 'mapamind'), { ...mindMap, userId });
-    console.log('MindMap written with ID: ', docRef.id);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding MindMap: ', e);
-    throw e;
-  }
-};
-
-export const getMindMaps = async (): Promise<any[]> => {
-  const querySnapshot = await getDocs(collection(db, 'mapamind'));
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-};
-
-export const updateMindMap = async (mindMapId: string, updates: Partial<any>): Promise<void> => {
-  try {
-    const mindMapDocRef = doc(db, 'mapamind', mindMapId);
-    await updateDoc(mindMapDocRef, updates);
-    console.log('MindMap updated with ID: ', mindMapId);
-  } catch (error) {
-    console.error('Error updating MindMap: ', error);
-    throw error;
-  }
-};
-
-export const deleteMindMap = async (mindMapId: string): Promise<void> => {
-  try {
-    await deleteDoc(doc(db, 'mapamind', mindMapId));
-    console.log('MindMap deleted with ID: ', mindMapId);
-  } catch (error) {
-    console.error('Error deleting MindMap: ', error);
-    throw error;
-  }
+  return monthlyRevenue;
 };

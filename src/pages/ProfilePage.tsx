@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAuth } from 'firebase/auth';
-import { getBarberByEmail, updateBarber, getServicesCountByBarberEmail, getProductsCountByBarberEmail, getClientsCountByBarberEmail, getTotalRevenueByBarberEmail, getBarberAchievements, updateBarberAchievements, getMonthlyRevenueByBarberEmail, getAverageServiceTimeByBarberEmail } from '@/integrations/firebase/firebase-db';
-import { ChangeEvent, useCallback } from 'react';
+import { getBarberByEmail, updateBarber, getServicesCountByBarberEmail, getProductsCountByBarberEmail, getClientsCountByBarberEmail, getTotalRevenueByBarberEmail, getBarberAchievements, updateBarberAchievements, getTotalRevenueByBarberEmailThisMonth, getMonthlyRevenueByBarberEmail } from '@/integrations/firebase/firebase-db';
+import { ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
-import MonthSelector from "@/components/MonthSelector";
+
+const calcularTempoMedioServicos = () => {
+  // Simulação do cálculo do tempo médio dos serviços
+  return "30 minutos";
+};
 
 const calcularAvaliacao = (totalRevenue: number) => {
   const avaliacao = totalRevenue / 1000;
@@ -20,12 +24,10 @@ const ProfilePage = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
-  const [averageServiceTime, setAverageServiceTime] = useState<number>(0);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [achievements, setAchievements] = useState<string[]>([]);
   const [monthlyRevenue, setMonthlyRevenue] = useState<{ [month: string]: number }>({});
   const [highestRevenueMonth, setHighestRevenueMonth] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -46,10 +48,6 @@ const ProfilePage = () => {
     { threshold: 15000, name: 'Imortal', icon: '🚀' },
   ];
 
-  const handleMonthChange = useCallback((month: string) => {
-    setSelectedMonth(month);
-  }, []);
-
   useEffect(() => {
     const fetchData = async () => {
       if (user && user.email) {
@@ -61,49 +59,36 @@ const ProfilePage = () => {
         setPhone(data?.phone || '');
         setProfilePicture(data?.profilePicture || '');
 
-        const servicesCountValue = await getServicesCountByBarberEmail(user.email, selectedMonth || undefined);
+        const servicesCountValue = await getServicesCountByBarberEmail(user.email);
         setServicesCount(servicesCountValue);
         console.log('servicesCountValue:', servicesCountValue);
 
-        const productsCount = await getProductsCountByBarberEmail(user.email, selectedMonth || undefined);
+        const productsCount = await getProductsCountByBarberEmail(user.email);
         setProductsCount(productsCount);
 
-        const clientsCount = await getClientsCountByBarberEmail(user.email, selectedMonth || undefined);
+        const clientsCount = await getClientsCountByBarberEmail(user.email);
         setClientsCount(clientsCount);
 
-        const totalRevenueValue = await getTotalRevenueByBarberEmail(user.email, selectedMonth || undefined);
+        const totalRevenueValue = await getTotalRevenueByBarberEmail(user.email);
         setTotalRevenue(totalRevenueValue);
         console.log('totalRevenueValue:', totalRevenueValue);
         console.log('totalRevenue para avaliação:', totalRevenueValue);
 
-        const averageServiceTimeValue = await getAverageServiceTimeByBarberEmail(user.email, selectedMonth || undefined);
-        setAverageServiceTime(averageServiceTimeValue);
-
-        const totalRevenueThisMonthValue = await getTotalRevenueByBarberEmail(user.email, selectedMonth || undefined);
+        const totalRevenueThisMonthValue = await getTotalRevenueByBarberEmailThisMonth(user.email);
         setTotalRevenueThisMonth(totalRevenueThisMonthValue);
 
         const fetchedAchievements = await getBarberAchievements(user.email);
         setAchievements(fetchedAchievements);
-        console.log('Achievements:', fetchedAchievements);
 
         const monthlyRevenueData = await getMonthlyRevenueByBarberEmail(user.email);
         setMonthlyRevenue(monthlyRevenueData);
-        console.log('monthlyRevenueData:', monthlyRevenueData);
 
         // Determine the month with the highest revenue
-        let maxRevenue = Number.MIN_SAFE_INTEGER;
+        let maxRevenue = 0;
         let maxRevenueMonth: string | null = null;
-       for (const month in monthlyRevenueData) {
-          let revenue = monthlyRevenueData[month];
-          if (typeof revenue === 'string') {
-            revenue = parseFloat(revenue);
-            if (isNaN(revenue)) {
-              revenue = 0; // Handle invalid string values
-            }
-          }
-          console.log('revenue:', revenue);
-          if (revenue > maxRevenue) {
-            maxRevenue = revenue;
+        for (const month in monthlyRevenueData) {
+          if (monthlyRevenueData[month] > maxRevenue) {
+            maxRevenue = monthlyRevenueData[month];
             maxRevenueMonth = month;
           }
         }
@@ -125,7 +110,7 @@ const ProfilePage = () => {
     };
 
     fetchData();
-  }, [user, selectedMonth]);
+  }, [user]);
 
   useEffect(() => {
     const updateAchievements = async () => {
@@ -135,15 +120,14 @@ const ProfilePage = () => {
           maxRevenue = monthlyRevenue[highestRevenueMonth]
         }
         const newAchievements: string[] = [];
-        console.log('maxRevenue:', maxRevenue);
         for (const level of achievementLevels) {
           if (maxRevenue >= level.threshold) {
             newAchievements.push(level.name);
           }
         }
 
-        setAchievements(newAchievements);
         await updateBarberAchievements(user.email, newAchievements);
+        setAchievements(newAchievements);
       }
     };
 
@@ -196,77 +180,76 @@ const ProfilePage = () => {
     }
   };
 
-  const RankingTable = () => {
-    return (
-      <Card className="p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold mb-2">Insígnias Recolhidas</h2>
-          <div className="flex flex-wrap gap-2 items-center justify-center">
-            {achievementLevels.map((level) => (
-              <div key={level.name} className="relative">
-                <span 
-                  className="text-4xl"
-                  style={{ 
-                    opacity: achievements.includes(level.name) ? 1 : 0.3,
-                    transition: 'opacity 0.3s ease'
-                  }}
-                >
-                  {level.icon}
-                </span>
+  const RankingTable = () => (
+    <Card className="p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+      <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+        <h2 className="text-lg font-semibold mb-2">Insígnias Recolhidas</h2>
+        <div className="flex flex-row gap-2 items-center justify-center">
+          {achievementLevels.map((level) => {
+            let isAchieved = false;
+            if (highestRevenueMonth && monthlyRevenue[highestRevenueMonth] >= level.threshold) {
+              isAchieved = true;
+            }
+            return (
+              <div
+                key={level.name}
+                className={`relative ${isAchieved ? '' : 'opacity-10'}`}
+              >
+                <span className="text-2xl" style={{ color: isAchieved ? 'inherit' : '#888' }}>{level.icon}</span>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
+      </div>
 
-        <table className="table-auto w-full text-sm">
-          <thead>
-            <tr>
-              <th className="px-2 py-1">Faixa de Pontuação</th>
-              <th className="px-2 py-1">Nome do Ranking</th>
-              <th className="px-2 py-1">Ícone</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border px-2 py-1">0 a 1000</td>
-              <td className="border px-2 py-1">Iniciante</td>
-              <td className="border px-2 py-1">🌱 Semente</td>
-            </tr>
-            <tr>
-              <td className="border px-2 py-1">1000 a 3000</td>
-              <td className="border px-2 py-1">Aprendiz</td>
-              <td className="border px-2 py-1">🔧 Ferramenta</td>
-            </tr>
-            <tr>
-              <td className="border px-2 py-1">3000 a 5000</td>
-              <td className="border px-2 py-1">Profissional</td>
-              <td className="border px-2 py-1">✂️ Tesoura Pro</td>
-            </tr>
-            <tr>
-              <td className="border px-2 py-1">5000 a 8000</td>
-              <td className="border px-2 py-1">Mestre</td>
-              <td className="border px-2 py-1">🏆 Troféu de Ouro</td>
-            </tr>
-            <tr>
-              <td className="border px-2 py-1">8000 a 10000</td>
-              <td className="border px-2 py-1">Lendário</td>
-              <td className="border px-2 py-1">🔥 Chama Ardente</td>
-            </tr>
-            <tr>
-              <td className="border px-2 py-1">10000 a 15000</td>
-              <td className="border px-2 py-1">Elite</td>
-              <td className="border px-2 py-1">👑 Coroa de Elite</td>
-            </tr>
-            <tr>
-              <td className="border px-2 py-1">15000 a 20000</td>
-              <td className="border px-2 py-1">Imortal</td>
-              <td className="border px-2 py-1">🚀 Foguete Supremo</td>
-            </tr>
-          </tbody>
-        </table>
-      </Card>
-    );
-  };
+      <table className="table-auto w-full text-sm">
+        <thead>
+          <tr>
+            <th className="px-2 py-1">Faixa de Pontuação</th>
+            <th className="px-2 py-1">Nome do Ranking</th>
+            <th className="px-2 py-1">Ícone</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="border px-2 py-1">0 a 1000</td>
+            <td className="border px-2 py-1">Iniciante</td>
+            <td className="border px-2 py-1">🌱 Semente</td>
+          </tr>
+          <tr>
+            <td className="border px-2 py-1">1000 a 3000</td>
+            <td className="border px-2 py-1">Aprendiz</td>
+            <td className="border px-2 py-1">🔧 Ferramenta</td>
+          </tr>
+          <tr>
+            <td className="border px-2 py-1">3000 a 5000</td>
+            <td className="border px-2 py-1">Profissional</td>
+            <td className="border px-2 py-1">✂️ Tesoura Pro</td>
+          </tr>
+          <tr>
+            <td className="border px-2 py-1">5000 a 8000</td>
+            <td className="border px-2 py-1">Mestre</td>
+            <td className="border px-2 py-1">🏆 Troféu de Ouro</td>
+          </tr>
+          <tr>
+            <td className="border px-2 py-1">8000 a 10000</td>
+            <td className="border px-2 py-1">Lendário</td>
+            <td className="border px-2 py-1">🔥 Chama Ardente</td>
+          </tr>
+          <tr>
+            <td className="border px-2 py-1">10000 a 15000</td>
+            <td className="border px-2 py-1">Elite</td>
+            <td className="border px-2 py-1">👑 Coroa de Elite</td>
+          </tr>
+          <tr>
+            <td className="border px-2 py-1">15000 a 20000</td>
+            <td className="border px-2 py-1">Imortal</td>
+            <td className="border px-4 py-2">🚀 Foguete Supremo</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -282,12 +265,11 @@ const ProfilePage = () => {
         <p className="text-lg text-muted-foreground text-center">
           Informações do seu perfil e métricas de desempenho
         </p>
-        <MonthSelector onMonthChange={handleMonthChange} />
         <div className="flex flex-col md:flex-row gap-6 justify-center">
           <div className="w-full md:w-1/3">
             <Card className="p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
               <Avatar className="w-32 h-32 mx-auto">
-                <AvatarImage src={profilePicture || "https://github.com/shadcn.png"} />
+                <AvatarImage src={profilePicture || "https://github.com/shadcn.png"}></AvatarImage>
                 <AvatarFallback>{barberData?.name?.charAt(0).toUpperCase() || 'CN'}</AvatarFallback>
               </Avatar>
               {isEditing ? (
@@ -364,9 +346,9 @@ const ProfilePage = () => {
                   <p className="text-lg font-semibold">Total faturado:</p>
                   <p className="text-2xl">{totalRevenue.toFixed(2)}</p>
                 </Card>
-                 <Card className="p-4 mb-4">
+                <Card className="p-4 mb-4">
                   <p className="text-lg font-semibold">Tempo médio dos serviços:</p>
-                  <p className="text-2xl">{averageServiceTime.toFixed(2)} minutos</p>
+                  <p className="text-2xl">{calcularTempoMedioServicos()}</p>
                 </Card>
               </div>
               <Card className="p-4">

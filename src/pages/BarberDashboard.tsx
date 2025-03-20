@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { getBarberByEmail, db, updateBarber, getBarbers } from '@/integrations/firebase/firebase-db';
 import ShareButton from '@/components/ShareButton';
@@ -22,6 +22,7 @@ import { format, toDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -58,32 +59,22 @@ const BarberDashboard = () => {
   const [ganhosSemanaDate, setGanhosSemanaDate] = useState<Date | undefined>(undefined);
   const [selectedWeek, setSelectedWeek] = useState('');
   const [totalProduzido, setTotalProduzido] = useState(0);
-  const [produzidoMesDate, setProduzidoMesDate] = useState<Date | undefined | string>(undefined);
-  const [totalReceberDate, setTotalReceberDate] = useState<Date | undefined | string>(undefined);
+  const [produzidoMesDate, setProduzidoMesDate] = useState<Date | undefined>(undefined);
+  const [totalReceberDate, setTotalReceberDate] = useState<Date | undefined>(undefined);
   const [barberShops, setBarberShops] = useState([]);
   const [selectedBarberShop, setSelectedBarberShop] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState<number | string>('');
-  const [totalReceber, setTotalReceber] = useState('0.00');
-  const [totalProduzidoMes, setTotalProduzidoMes] = useState('0.00');
+  const [selectedMonth, setSelectedMonth] = useState('');
 
   const getMonthName = (date: Date) => {
     return date.toLocaleDateString('pt-BR', { month: 'long' });
   };
 
- const filterProductionResultsByMonth = (results: any[], month: number | string | undefined, year: number) => {
-    if (month === 'Todos') {
-      return results;
-    }
-
-    if (month === undefined) {
-      return [];
-    }
-
-    return results.filter(result => {
-      const resultDate = new Date(result.date);
-      return resultDate.getMonth() === (typeof month === 'string' ? parseInt(month, 10) : month as number) && resultDate.getFullYear() === year;
-    });
-  };
+    const filterProductionResultsByMonth = (results: any[], month: number, year: number) => {
+        return results.filter(result => {
+            const resultDate = new Date(result.date);
+            return resultDate.getMonth() === month && resultDate.getFullYear() === year;
+        });
+    };
 
     const calculateTotalEarnings = (results: any[]) => {
         return results.reduce((sum, result) => {
@@ -105,89 +96,6 @@ const BarberDashboard = () => {
       setProductionResults(filteredResults);
     }
   };
-
-  useEffect(() => {
-    let totalEarnings = 0;
-    let totalProduction = 0;
-    let filteredResults: any[] = productionResults;
-
-    if (totalReceberDate instanceof Date) {
-      const month = totalReceberDate.getMonth();
-      const year = totalReceberDate.getFullYear();
-      filteredResults = filterProductionResultsByMonth(productionResults, typeof month === 'string' ? parseInt(month, 10) : month as number, year);
-      totalEarnings = calculateTotalEarnings(filteredResults);
-    } else {
-      totalEarnings = productionResults.reduce((sum, result) => {
-        if (result.serviceName === 'Product Sale') {
-          return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
-        } else {
-          return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
-        }
-      }, 0);
-    }
-
-    if (produzidoMesDate instanceof Date) {
-      const month = produzidoMesDate.getMonth();
-      const year = new Date().getFullYear();
-      filteredResults = filterProductionResultsByMonth(productionResults, month, year);
-      totalProduction = filteredResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-    } else {
-      totalProduction = productionResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-    }
-  }, [user, selectedMonth, totalReceberDate, produzidoMesDate]);
-
-  useEffect(() => {
-    let totalEarnings = 0;
-    let totalProduction = 0;
-    let filteredResults: any[] = productionResults;
-
-    if (totalReceberDate instanceof Date) {
-      const month = totalReceberDate.getMonth();
-      const year = totalReceberDate.getFullYear();
-      filteredResults = filterProductionResultsByMonth(productionResults, month !== undefined ? month : undefined, year);
-      totalEarnings = calculateTotalEarnings(filteredResults);
-    } else {
-      totalEarnings = productionResults.reduce((sum, result) => {
-        if (result.serviceName === 'Product Sale') {
-          return sum + ((Number(result.totalPrice) || 0) / 1.23) * 0.20;
-        } else {
-          return sum + (Number(result.commission) || (Number(result.price) || 0) * 0.4);
-        }
-      }, 0);
-    }
-
-    if (produzidoMesDate instanceof Date) {
-      const month = produzidoMesDate.getMonth();
-      const year = new Date().getFullYear();
-      filteredResults = filterProductionResultsByMonth(productionResults, typeof month === 'string' ? parseInt(month, 10) : month as number, year);
-      totalProduction = filteredResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-    } else {
-      totalProduction = productionResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-    }
-
-    setTotalReceber(totalEarnings.toFixed(2));
-    setTotalProduzidoMes(totalProduction.toFixed(2));
-  }, [user, selectedMonth, totalReceberDate, produzidoMesDate, totalEarnings]);
-
-  const filteredProductionResults = useMemo(() => {
-    return productionResults.filter(result => result.barberName === user?.email);
-  }, [productionResults, user?.email]);
-
- const totalEarnings = useMemo(() => {
-    let total = 0;
-    let filteredResults = filteredProductionResults;
-
-    if (totalReceberDate === 'Todos') {
-      filteredResults = productionResults;
-    } else if (totalReceberDate instanceof Date) {
-      const month = totalReceberDate.getMonth();
-      const year = totalReceberDate.getFullYear();
-      filteredResults = filterProductionResultsByMonth(productionResults, typeof month === 'string' ? parseInt(month, 10) : month, year);
-    }
-
-    total = calculateTotalEarnings(filteredResults);
-    return total.toFixed(2);
-  }, [productionResults, totalReceberDate, produzidoMesDate, selectedMonth]);
 
   useEffect(() => {
     const fetchBarberData = async () => {
@@ -213,22 +121,7 @@ const BarberDashboard = () => {
 
     fetchBarberData();
     fetchBarberShops();
-  }, [user, selectedMonth, totalReceberDate, produzidoMesDate]);
-
-  useEffect(() => {
-    let totalProduction = 0;
-
-    if (produzidoMesDate === 'Todos') {
-      totalProduction = productionResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-    } else if (produzidoMesDate instanceof Date) {
-      const month = produzidoMesDate.getMonth();
-      const year = new Date().getFullYear();
-      const filteredResults = filterProductionResultsByMonth(productionResults, typeof month === 'string' ? parseInt(month, 10) : month, year);
-      totalProduction = filteredResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-    }
-
-    setTotalProduzidoMes(totalProduction.toFixed(2));
-  }, [productionResults, produzidoMesDate, selectedMonth, totalReceberDate]);
+  }, [user]);
 
   if (loading) {
     return <div>Loading barber data...</div>;
@@ -282,8 +175,8 @@ const BarberDashboard = () => {
               <Card className="p-6">
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Ganhos Hoje
-                  <Button variant="ghost" size="icon" onClick={() => setGanhosHojeVisible(!ganhosHojeVisible)}>
-                    {ganhosHojeVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="12" cy="12" r="2" /><path d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="3" y1="3" x2="21" y2="21" /><path d="M10.584 10.587a2 2 0 0 0 2.828 2.83" /><path d="M16.667 16.665c-2.666 4.666 -6 7 -10 7a9.049 9.049 0 0 1 -3.255 -.77" /><path d="M22 12c-2.667 4.667 -6 7 -10 7a9.049 9.049 0 0 1 -3.255 -.77" /><path d="M2 12c2.667 -4.667 6 -7 10 -7s3.333 2.333 6 7" /></svg>}
+<Button variant="ghost" size="icon" onClick={() => setGanhosHojeVisible(!ganhosHojeVisible)}>
+                    {ganhosHojeVisible ? <Eye className="lucide-eye" /> : <EyeOff className="lucide-eye-off" />}
                   </Button>
                 </h3>
                 <DatePickerCard onDateChange={(date) => setGanhosHojeDate(date)} defaultDate={ganhosHojeDate} />
@@ -296,23 +189,17 @@ const BarberDashboard = () => {
                       const selectedDateEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59);
                       return resultDate >= selectedDateStart && resultDate <= selectedDateEnd;
                     })
-                    .reduce((sum, result) => {
-                      if (result.serviceName === 'Product Sale') {
-                        return sum + (Number(result.totalPrice) || 0);
-                      } else {
-                        return sum + (Number(result.price) || 0);
-                      }
-                    }, 0)
+                    .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0)
                     .toFixed(2)}` : '******'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Comissão: {ganhosHojeVisible ? `€${productionResults
                     .filter(result => {
                       const resultDate = new Date(result.date);
-                      const selectedDate = ganhosHojeDate || new Date();
-                      const selectedDateStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 0, 0, 0);
-                      const selectedDateEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 23, 59, 59);
-                      return resultDate >= selectedDateStart && resultDate <= selectedDateEnd;
+                      const today = new Date();
+                      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+                      const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+                      return resultDate >= todayStart && resultDate <= todayEnd;
                     })
                     .reduce((sum, result) => {
                       if (result.serviceName === 'Product Sale') {
@@ -328,7 +215,7 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Ganhos esta Semana
                   <Button variant="ghost" size="icon" onClick={() => setGanhosSemanaVisible(!ganhosSemanaVisible)}>
-                    {ganhosSemanaVisible ? <svg key="eye-open" xmlns="http://www.w3.org/24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg key="eye-closed" xmlns="http://www.w3.org/24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 o 0 1 1.27.11"/></svg>}
+                    {ganhosSemanaVisible ? <Eye className="lucide-eye" /> : <EyeOff className="lucide-eye-off" />}
                   </Button>
                 </h3>
                 <WeekSelector onWeekChange={(week) => {
@@ -361,81 +248,65 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Total a Receber
                   <Button variant="ghost" size="icon" onClick={() => setTotalReceberVisible(!totalReceberVisible)}>
-                    {totalReceberVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 o 0 1 1.27.11"/></svg>}
+                    {totalReceberVisible ? <Eye className="lucide-eye" /> : <EyeOff className="lucide-eye-off" />}
                   </Button>
                 </h3>
                 <MonthSelector onMonthChange={(month) => {
-                  setSelectedMonth(month);
                   const now = new Date();
-                  let selectedMonthDate: Date | 'Todos';
-                  if (month === 'Todos') {
-                    selectedMonthDate = 'Todos';
-                  } else {
-                    selectedMonthDate = new Date(now.getFullYear(), month, 1);
-                  }
-                  setTotalReceberDate(selectedMonthDate);
+                  const selectedMonth = new Date(now.getFullYear(), month, 1);
+                  setTotalReceberDate(selectedMonth);
+                  setSelectedMonth(month.toString());
                 }} />
-                 <p
-                  className="text-3xl font-bold mt-2"
-                  style={{ visibility: totalReceberVisible ? 'visible' : 'hidden' }}
-                >
-                  {totalReceberVisible ? `€${totalReceber}` : '******'}
-                </p>
-                 <p
-                  className="text-3xl font-bold mt-2"
-                  style={{ visibility: !totalReceberVisible ? 'visible' : 'hidden' }}
-                >
-                  ******
-                </p>
+                <>
+    <p
+      className="text-3xl font-bold mt-2"
+      style={{ visibility: totalReceberVisible ? 'visible' : 'hidden' }}
+    >
+      {totalReceberDate ? `€${calculateTotalEarnings(filterProductionResultsByMonth(productionResults, totalReceberDate.getMonth(), totalReceberDate.getFullYear())).toFixed(2)}` : '€0.00'}
+    </p>
+    <p
+      className="text-3xl font-bold mt-2"
+      style={{ visibility: totalReceberVisible ? 'hidden' : 'visible' }}
+    >
+      ******
+    </p>
+                </>
                 <p className="text-sm text-muted-foreground mt-1">Comissões pendentes</p>
               </Card>
               <Card className="p-6">
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Total Produzido
                   <Button variant="ghost" size="icon" onClick={() => setProduzidoMesVisible(!produzidoMesVisible)}>
-                    {produzidoMesVisible ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 o 0 1 1.27.11"/></svg>}
+                    {produzidoMesVisible ? <Eye className="lucide lucide-eye" /> : <EyeOff className="lucide lucide-eye-off"/>}
                   </Button>
                 </h3>
                 <MonthSelector onMonthChange={(month) => {
-                  setSelectedMonth(month);
                   const now = new Date();
-                  let selectedMonthDate: Date | 'Todos';
-                  if (month === 'Todos') {
-                    selectedMonthDate = 'Todos';
-                  } else {
-                    selectedMonthDate = new Date(now.getFullYear(), month, 1);
-                  }
-                  setProduzidoMesDate(selectedMonthDate);
+                  const selectedMonth = new Date(now.getFullYear(), month, 1);
+                  setProduzidoMesDate(selectedMonth);
+                  setSelectedMonth(month.toString());
+                  const total = productionResults
+                    .filter(result => {
+                      const resultDate = new Date(result.date);
+                      return resultDate.getMonth() === selectedMonth.getMonth() && resultDate.getFullYear() === selectedMonth.getFullYear();
+                    })
+                    .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
+                  setTotalProduzido(total);
                 }} />
-                <p
-                  className="text-3xl font-bold mt-2"
-                  style={{ visibility: produzidoMesVisible ? 'visible' : 'hidden' }}
-                >
-                 €{(() => {
-                    if (produzidoMesDate === undefined || produzidoMesDate === null) {
-                      return '0.00';
-                    } else if (produzidoMesDate === 'Todos') {
-                      const total = productionResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-                      return total ? total.toFixed(2) : '0.00';
-                    } else if (produzidoMesDate instanceof Date) {
-                      const month = produzidoMesDate.getMonth();
-                      const year = new Date().getFullYear();
-                      const filteredResults = filterProductionResultsByMonth(productionResults, month, year);
-                      const total = filteredResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-                      return total ? total.toFixed(2) : '0.00';
-                    }
-                     else {
-                      const total = productionResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-                      return total ? total.toFixed(2) : '0.00';
-                    }
-                  })()}
-                </p>
-                <p
-                  className="text-3xl font-bold mt-2"
-                  style={{ visibility: !produzidoMesVisible ? 'visible' : 'hidden' }}
-                >
-                  ******
-                </p>
+                <>
+                  <p
+                    className="text-3xl font-bold mt-2"
+                    style={{ visibility: produzidoMesVisible ? 'visible' : 'hidden' }}
+                  >
+                    €{totalProduzido.toFixed(2)}
+                  </p>
+                  <p
+                    className="text-3xl font-bold mt-2"
+                    style={{ visibility: produzidoMesVisible ? 'hidden' : 'visible' }}
+                  >
+                    ******
+                  </p>
+                </>
               </Card>
               <Card className="p-6">
                 <h3 className="text-lg font-medium">Serviços Hoje</h3>
@@ -496,7 +367,7 @@ const BarberDashboard = () => {
                   )
                   .map(([name, value]) => ({ name, value }))
                   .sort((a, b) => {
-                    const daysOfWeek = ['Seg', 'Ter', 'Qua', Qui', 'Sex', 'Sáb', 'Dom'];
+                    const daysOfWeek = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
                     return daysOfWeek.indexOf(a.name) - daysOfWeek.indexOf(b.name);
                   })
                 }>
@@ -519,4 +390,91 @@ const BarberDashboard = () => {
                       <th className="text-left py-3 px-4">Serviço</th>
                       <th className="text-left py-3 px-4">Cliente</th>
                       <th className="text-left py-3 px-4">Data/Hora</th>
-                      <th className="text-right py-3 px
+                      <th className="text-right py-3 px-4">Valor</th>
+                      <th className="text-right py-3 px-4">Comissão</th>
+                      <th className="text-right py-3 px-4">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productionResults.sort((a, b) => {
+                      const dateA = new Date(a.date);
+                      const dateB = new Date(b.date);
+                      return dateB.getTime() - dateA.getTime();
+                    }).map((result) => {
+                      const formattedDate = format(new Date(result.date), 'dd/MM/yyyy HH:mm', { locale: ptBR });
+                      if (result.serviceName === 'Product Sale') {
+                        return (
+                          <tr key={result.id} className="border-b">
+                            <td className="py-3 px-4">{result.productName}</td>
+                            <td className="py-3 px-4">{result.barberName}</td>
+                            <td className="py-3 px-4">{formattedDate}</td>
+                            <td className="text-right py-3 px-4">€{result.totalPrice?.toFixed(2) || 0}</td>
+                            <td className="text-right py-3 px-4">€{((result.totalPrice || 0) / 1.23 * 0.20).toFixed(2)}</td>
+                             <td className="text-right py-3 px-4">
+                              <Button variant="destructive" size="sm" onClick={async () => {
+                                  if (result.id) {
+                                    await deleteDoc(doc(db, 'productionResults', result.id));
+                                    await fetchData();
+                                  }
+                                }}>
+                                Excluir
+                              </Button>
+                            </td>
+                          </tr>
+                        )
+                      }
+                      return (
+                        <tr key={result.id} className="border-b">
+                          <td className="py-3 px-4">
+                            {result.serviceName === 'Product Sale' ? result.productName : (result.serviceName !== 'Unknown Service' ? result.serviceName : '')}
+                            {result.extraService && ` ${result.extraService}`}
+                             {result.extraService2 && ` ${result.extraService2}`}
+                          </td>
+                          <td className="py-3 px-4">{result.clientName}</td>
+                          <td className="py-3 px-4">{formattedDate}</td>
+                          <td className="text-right py-3 px-4">€{Number(result.price)?.toFixed(2) || 0}</td>
+                          <td className="text-right py-3 px-4">€{(Number(result.price) * 0.4)?.toFixed(2) || 0}</td>
+                             <td className="text-right py-3 px-4">
+                              <Button variant="destructive" size="sm" onClick={async () => {
+                                  if (result.id) {
+                                    await deleteDoc(doc(db, 'productionResults', result.id));
+                                    fetchData();
+                                    toast({
+                                      title: "Serviço excluído com sucesso!",
+                                      description: `${result.serviceName || 'Serviço'} para ${result.clientName || 'Cliente'}`,
+                                    });
+                                  }
+                                }}>
+                                Excluir
+                              </Button>
+                            </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={4} className="text-right font-medium py-2 px-4">Total</td>
+                      <td className="text-right font-medium py-2 px-4">
+                        €{productionResults.reduce((sum, result) => {
+                          if (result.serviceName === 'Product Sale') {
+                            return sum + ((result.totalPrice || 0) / 1.23) * 0.20;
+                          } else {
+                            return sum + (result.commission || (result.price || 0) * 0.4);
+                          }
+                        }, 0).toFixed(2)}
+                      </td>
+                       <td className="text-right font-medium py-2 px-4"></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BarberDashboard;
