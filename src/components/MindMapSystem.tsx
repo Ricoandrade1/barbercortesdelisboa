@@ -818,13 +818,18 @@ const MindMapSystem = () => {
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="-2500 -2500 5000 5000">
                   {useMemo(() => connections.map(conn => {
                     const source = nodes.find(node => node.id === conn.sourceId);
-                    const target = nodes.find(node => node.id === conn.targetId);
-                    if (!source || !target) return null;
+    const target = nodes.find(node => node.id === conn.targetId);
+    if (!source || !target) return null;
 
-                    const sourceX = Number(source.x) + 60;
-                    const sourceY = Number(source.y) + 20;
-                    const targetX = Number(target.x) + 60;
-                    const targetY = Number(target.y) + 20;
+    if (source.x === undefined || source.y === undefined || target.x === undefined || target.y === undefined) {
+      console.error("Coordenadas inválidas para a conexão:", conn);
+      return null;
+    }
+
+    const sourceX = Number(source.x) + 60;
+    const sourceY = Number(source.y) + 20;
+    const targetX = Number(target.x) + 60;
+    const targetY = Number(target.y) + 20;
 
                     if (isNaN(sourceX) || isNaN(sourceY) || isNaN(targetX) || isNaN(targetY)) {
                       console.error("Coordenadas inválidas para a conexão:", conn);

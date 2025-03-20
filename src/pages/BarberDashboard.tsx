@@ -114,7 +114,7 @@ const BarberDashboard = () => {
     if (totalReceberDate instanceof Date) {
       const month = totalReceberDate.getMonth();
       const year = totalReceberDate.getFullYear();
-      filteredResults = filterProductionResultsByMonth(productionResults, month, year);
+      filteredResults = filterProductionResultsByMonth(productionResults, typeof month === 'string' ? parseInt(month, 10) : month as number, year);
       totalEarnings = calculateTotalEarnings(filteredResults);
     } else {
       totalEarnings = productionResults.reduce((sum, result) => {
@@ -159,7 +159,7 @@ const BarberDashboard = () => {
     if (produzidoMesDate instanceof Date) {
       const month = produzidoMesDate.getMonth();
       const year = new Date().getFullYear();
-      filteredResults = filterProductionResultsByMonth(productionResults, typeof month === 'string' ? parseInt(month, 10) : month, year);
+      filteredResults = filterProductionResultsByMonth(productionResults, typeof month === 'string' ? parseInt(month, 10) : month as number, year);
       totalProduction = filteredResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
     } else {
       totalProduction = productionResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
@@ -167,7 +167,7 @@ const BarberDashboard = () => {
 
     setTotalReceber(totalEarnings.toFixed(2));
     setTotalProduzidoMes(totalProduction.toFixed(2));
-  }, [user, selectedMonth, totalReceberDate, produzidoMesDate]);
+  }, [user, selectedMonth, totalReceberDate, produzidoMesDate, totalEarnings]);
 
   const filteredProductionResults = useMemo(() => {
     return productionResults.filter(result => result.barberName === user?.email);
@@ -228,7 +228,7 @@ const BarberDashboard = () => {
     }
 
     setTotalProduzidoMes(totalProduction.toFixed(2));
-  }, [productionResults, produzidoMesDate, selectedMonth]);
+  }, [productionResults, produzidoMesDate, selectedMonth, totalReceberDate]);
 
   if (loading) {
     return <div>Loading barber data...</div>;
@@ -328,7 +328,7 @@ const BarberDashboard = () => {
                 <h3 className="text-lg font-medium flex items-center justify-between">
                   Ganhos esta Semana
                   <Button variant="ghost" size="icon" onClick={() => setGanhosSemanaVisible(!ganhosSemanaVisible)}>
-                    {ganhosSemanaVisible ? <svg xmlns="http://www.w3.org/24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg xmlns="http://www.w3.org/24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 o 0 1 1.27.11"/></svg>}
+                    {ganhosSemanaVisible ? <svg key="eye-open" xmlns="http://www.w3.org/24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> : <svg key="eye-closed" xmlns="http://www.w3.org/24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.5 10.5 0 0 1 20 12c0 7-3 7-10 7a13.13 13.13 o 0 1-1.27-.11"/><path d="M2 2l20 20"/><path d="M16.92 16.92A10.5 10.5 0 0 1 4 12c0-7 3-7 10-7a13.13 o 0 1 1.27.11"/></svg>}
                   </Button>
                 </h3>
                 <WeekSelector onWeekChange={(week) => {
@@ -496,7 +496,7 @@ const BarberDashboard = () => {
                   )
                   .map(([name, value]) => ({ name, value }))
                   .sort((a, b) => {
-                    const daysOfWeek = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+                    const daysOfWeek = ['Seg', 'Ter', 'Qua', Qui', 'Sex', 'Sáb', 'Dom'];
                     return daysOfWeek.indexOf(a.name) - daysOfWeek.indexOf(b.name);
                   })
                 }>
@@ -519,91 +519,4 @@ const BarberDashboard = () => {
                       <th className="text-left py-3 px-4">Serviço</th>
                       <th className="text-left py-3 px-4">Cliente</th>
                       <th className="text-left py-3 px-4">Data/Hora</th>
-                      <th className="text-right py-3 px-4">Valor</th>
-                      <th className="text-right py-3 px-4">Comissão</th>
-                      <th className="text-right py-3 px-4">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {productionResults.sort((a, b) => {
-                      const dateA = new Date(a.date);
-                      const dateB = new Date(b.date);
-                      return dateB.getTime() - dateA.getTime();
-                    }).map((result) => {
-                      const formattedDate = format(new Date(result.date), 'dd/MM/yyyy HH:mm', { locale: ptBR });
-                      if (result.serviceName === 'Product Sale') {
-                        return (
-                          <tr key={result.id} className="border-b">
-                            <td className="py-3 px-4">{result.productName}</td>
-                            <td className="py-3 px-4">{result.barberName}</td>
-                            <td className="py-3 px-4">{formattedDate}</td>
-                            <td className="text-right py-3 px-4">€{result.totalPrice?.toFixed(2) || 0}</td>
-                            <td className="text-right py-3 px-4">€{((result.totalPrice || 0) / 1.23 * 0.20).toFixed(2)}</td>
-                             <td className="text-right py-3 px-4">
-                              <Button variant="destructive" size="sm" onClick={async () => {
-                                  if (result.id) {
-                                    await deleteDoc(doc(db, 'productionResults', result.id));
-                                    await fetchData();
-                                  }
-                                }}>
-                                Excluir
-                              </Button>
-                            </td>
-                          </tr>
-                        )
-                      }
-                      return (
-                        <tr key={result.id} className="border-b">
-                          <td className="py-3 px-4">
-                            {result.serviceName === 'Product Sale' ? result.productName : (result.serviceName !== 'Unknown Service' ? result.serviceName : '')}
-                            {result.extraService && ` ${result.extraService}`}
-                             {result.extraService2 && ` ${result.extraService2}`}
-                          </td>
-                          <td className="py-3 px-4">{result.clientName}</td>
-                          <td className="py-3 px-4">{formattedDate}</td>
-                          <td className="text-right py-3 px-4">€{Number(result.price)?.toFixed(2) || 0}</td>
-                          <td className="text-right py-3 px-4">€{(Number(result.price) * 0.4)?.toFixed(2) || 0}</td>
-                             <td className="text-right py-3 px-4">
-                              <Button variant="destructive" size="sm" onClick={async () => {
-                                  if (result.id) {
-                                    await deleteDoc(doc(db, 'productionResults', result.id));
-                                    fetchData();
-                                    toast({
-                                      title: "Serviço excluído com sucesso!",
-                                      description: `${result.serviceName || 'Serviço'} para ${result.clientName || 'Cliente'}`,
-                                    });
-                                  }
-                                }}>
-                                Excluir
-                              </Button>
-                            </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colSpan={4} className="text-right font-medium py-2 px-4">Total</td>
-                      <td className="text-right font-medium py-2 px-4">
-                        €{productionResults.reduce((sum, result) => {
-                          if (result.serviceName === 'Product Sale') {
-                            return sum + ((result.totalPrice || 0) / 1.23) * 0.20;
-                          } else {
-                            return sum + (result.commission || (result.price || 0) * 0.4);
-                          }
-                        }, 0).toFixed(2)}
-                      </td>
-                       <td className="text-right font-medium py-2 px-4"></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default BarberDashboard;
+                      <th className="text-right py-3 px
