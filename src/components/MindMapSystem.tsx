@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, X, Save, Trash, ZoomIn, ZoomOut, Move, Share, Grid, List, PanelLeft, Palette, Home, Pencil } from 'lucide-react';
 import { useIsMobile } from "../hooks/use-mobile";
@@ -166,26 +166,28 @@ const MindMapSystem = () => {
     }
   };
 
-  const onDragNode = (e) => {
+  const onDragNode = useCallback((e) => {
     if (selectedNode) {
       const dx = (e.clientX - selectedNode.startX) / zoom;
       const dy = (e.clientY - selectedNode.startY) / zoom;
-      
-      setNodes(nodes.map(node => 
-        node.id === selectedNode.id 
-          ? { ...node, x: selectedNode.x + dx, y: selectedNode.y + dy }
-          : node
-      ));
-      
-      setSelectedNode({
-        ...selectedNode,
+
+      setNodes(prevNodes =>
+        prevNodes.map(node =>
+          node.id === selectedNode.id
+            ? { ...node, x: selectedNode.x + dx, y: selectedNode.y + dy }
+            : node
+        )
+      );
+
+      setSelectedNode(prevSelectedNode => ({
+        ...prevSelectedNode,
         startX: e.clientX,
         startY: e.clientY,
         x: selectedNode.x + dx,
         y: selectedNode.y + dy
-      });
+      }));
     }
-  };
+  }, [selectedNode, zoom, setNodes, setSelectedNode]);
 
   const stopDragNode = () => {
     setSelectedNode(null);
@@ -435,8 +437,10 @@ const MindMapSystem = () => {
                 value={node.title}
                 onChange={(e) => {
                   updateNodeTitle(node.id, e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = e.target.scrollHeight + 'px';
+                  requestAnimationFrame(() => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                  });
                 }}
                 onClick={(e) => e.stopPropagation()}
               />
@@ -812,7 +816,7 @@ const MindMapSystem = () => {
 
                 {/* Renderiza as conexões */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="-2500 -2500 5000 5000">
-                  {connections.map(conn => {
+                  {useMemo(() => connections.map(conn => {
                     const source = nodes.find(node => node.id === conn.sourceId);
                     const target = nodes.find(node => node.id === conn.targetId);
                     if (!source || !target) return null;
@@ -827,18 +831,29 @@ const MindMapSystem = () => {
                       return null;
                     }
 
+                    interface LineProps {
+                      x1: number;
+                      y1: number;
+                      x2: number;
+                      y2: number;
+                      stroke: string;
+                    }
+
+                    const Line = React.memo(function Line({ x1, y1, x2, y2, stroke }: LineProps) {
+                      return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={stroke} strokeWidth={2} />;
+                    });
+
                     return (
-                      <line
+                      <Line
                         key={conn.id}
                         x1={sourceX}
                         y1={sourceY}
                         x2={targetX}
                         y2={targetY}
                         stroke={target.color || '#6366F1'}
-                        strokeWidth={2}
                       />
                     );
-                  })}
+                  }), [connections, nodes])}
                 </svg>
 
                 {renderNodesAndConnections()}

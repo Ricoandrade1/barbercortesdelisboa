@@ -71,8 +71,12 @@ const BarberDashboard = () => {
   };
 
  const filterProductionResultsByMonth = (results: any[], month: number | string | undefined, year: number) => {
-    if (month === 'Todos' || month === undefined) {
+    if (month === 'Todos') {
       return results;
+    }
+
+    if (month === undefined) {
+      return [];
     }
 
     return results.filter(result => {
@@ -140,7 +144,7 @@ const BarberDashboard = () => {
     if (totalReceberDate instanceof Date) {
       const month = totalReceberDate.getMonth();
       const year = totalReceberDate.getFullYear();
-      filteredResults = filterProductionResultsByMonth(productionResults, typeof month === 'string' ? parseInt(month, 10) : month, year);
+      filteredResults = filterProductionResultsByMonth(productionResults, month !== undefined ? month : undefined, year);
       totalEarnings = calculateTotalEarnings(filteredResults);
     } else {
       totalEarnings = productionResults.reduce((sum, result) => {
@@ -165,9 +169,13 @@ const BarberDashboard = () => {
     setTotalProduzidoMes(totalProduction.toFixed(2));
   }, [user, selectedMonth, totalReceberDate, produzidoMesDate]);
 
+  const filteredProductionResults = useMemo(() => {
+    return productionResults.filter(result => result.barberName === user?.email);
+  }, [productionResults, user?.email]);
+
  const totalEarnings = useMemo(() => {
     let total = 0;
-    let filteredResults = productionResults;
+    let filteredResults = filteredProductionResults;
 
     if (totalReceberDate === 'Todos') {
       filteredResults = productionResults;
@@ -404,24 +412,20 @@ const BarberDashboard = () => {
                   style={{ visibility: produzidoMesVisible ? 'visible' : 'hidden' }}
                 >
                  €{(() => {
-                    if (produzidoMesDate === 'Todos') {
+                    if (produzidoMesDate === undefined || produzidoMesDate === null) {
+                      return '0.00';
+                    } else if (produzidoMesDate === 'Todos') {
                       const total = productionResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-                      console.log('Todos os meses - Total Produzido - Resultados:', productionResults);
-                      console.log('Todos os meses - Total Produzido - Total:', total);
                       return total ? total.toFixed(2) : '0.00';
                     } else if (produzidoMesDate instanceof Date) {
                       const month = produzidoMesDate.getMonth();
                       const year = new Date().getFullYear();
                       const filteredResults = filterProductionResultsByMonth(productionResults, month, year);
-                       console.log('Mês selecionado - Total Produzido - Resultados:', filteredResults);
                       const total = filteredResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-                      console.log('Mês selecionado - Total Produzido - Total:', total);
                       return total ? total.toFixed(2) : '0.00';
                     }
                      else {
                       const total = productionResults.reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-                      console.log('Todos os meses - Total Produzido - Resultados:', productionResults);
-                      console.log('Todos os meses - Total Produzido - Total:', total);
                       return total ? total.toFixed(2) : '0.00';
                     }
                   })()}
