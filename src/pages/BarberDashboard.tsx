@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getAuth } from 'firebase/auth';
 import { getBarberByEmail, db, updateBarber, getBarbers } from '@/integrations/firebase/firebase-db';
 import ShareButton from '@/components/ShareButton';
@@ -40,6 +40,8 @@ import { uploadProfilePicture } from "@/integrations/firebase/firebase-db";
 import DatePickerCard from "@/components/DatePickerCard";
 import WeekSelector from "@/components/WeekSelector";
 import MonthSelector from "@/components/MonthSelector";
+import TotalReceberValue from "@/components/TotalReceberValue";
+import TotalProduzidoValue from "@/components/TotalProduzidoValue";
 
 const BarberDashboard = () => {
   const [barberData, setBarberData] = useState(null);
@@ -69,12 +71,12 @@ const BarberDashboard = () => {
     return date.toLocaleDateString('pt-BR', { month: 'long' });
   };
 
-    const filterProductionResultsByMonth = (results: any[], month: number, year: number) => {
+    const filterProductionResultsByMonth = useCallback((results: any[], month: number, year: number) => {
         return results.filter(result => {
             const resultDate = new Date(result.date);
             return resultDate.getMonth() === month && resultDate.getFullYear() === year;
         });
-    };
+    }, []);
 
     const calculateTotalEarnings = (results: any[]) => {
         return results.reduce((sum, result) => {
@@ -258,18 +260,12 @@ const BarberDashboard = () => {
                   setSelectedMonth(month.toString());
                 }} />
                 <>
-    <p
-      className="text-3xl font-bold mt-2"
-      style={{ visibility: totalReceberVisible ? 'visible' : 'hidden' }}
-    >
-      {totalReceberDate ? `€${calculateTotalEarnings(filterProductionResultsByMonth(productionResults, totalReceberDate.getMonth(), totalReceberDate.getFullYear())).toFixed(2)}` : '€0.00'}
-    </p>
-    <p
-      className="text-3xl font-bold mt-2"
-      style={{ visibility: totalReceberVisible ? 'hidden' : 'visible' }}
-    >
-      ******
-    </p>
+                  <TotalReceberValue
+                    totalReceberVisible={totalReceberVisible}
+                    totalReceberDate={totalReceberDate}
+                    productionResults={productionResults}
+                    filterProductionResultsByMonth={filterProductionResultsByMonth}
+                  />
                 </>
                 <p className="text-sm text-muted-foreground mt-1">Comissões pendentes</p>
               </Card>
@@ -285,27 +281,14 @@ const BarberDashboard = () => {
                   const selectedMonth = new Date(now.getFullYear(), month, 1);
                   setProduzidoMesDate(selectedMonth);
                   setSelectedMonth(month.toString());
-                  const total = productionResults
-                    .filter(result => {
-                      const resultDate = new Date(result.date);
-                      return resultDate.getMonth() === selectedMonth.getMonth() && resultDate.getFullYear() === selectedMonth.getFullYear();
-                    })
-                    .reduce((sum, result) => sum + (Number(result.price) || 0) + (Number(result.totalPrice) || 0), 0);
-                  setTotalProduzido(total);
                 }} />
                 <>
-                  <p
-                    className="text-3xl font-bold mt-2"
-                    style={{ visibility: produzidoMesVisible ? 'visible' : 'hidden' }}
-                  >
-                    €{totalProduzido.toFixed(2)}
-                  </p>
-                  <p
-                    className="text-3xl font-bold mt-2"
-                    style={{ visibility: produzidoMesVisible ? 'hidden' : 'visible' }}
-                  >
-                    ******
-                  </p>
+                  <TotalProduzidoValue
+                    produzidoMesVisible={produzidoMesVisible}
+                    produzidoMesDate={produzidoMesDate}
+                    productionResults={productionResults}
+                    filterProductionResultsByMonth={filterProductionResultsByMonth}
+                  />
                 </>
               </Card>
               <Card className="p-6">
